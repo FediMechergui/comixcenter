@@ -1,0 +1,5 @@
+package app.comixcenter;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}

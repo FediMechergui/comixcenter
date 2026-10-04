@@ -1,0 +1,52 @@
+/* The reader is always dark: pages are the light source. */
+.reader {
+  position: fixed; inset: 0; background: #0b0c0f; color: #eceef2; overflow: hidden;
+  display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+.reader-bar {
+  position: absolute; left: 0; right: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: rgba(11, 12, 15, 0.92); backdrop-filter: blur(8px);
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+.reader-bar.top { top: 0; padding-top: calc(var(--safe-top) + 8px); border-bottom: 1px solid #23262d; }
+.reader-bar.bottom { bottom: 0; flex-direction: column; align-items: stretch; padding-bottom: calc(var(--safe-bottom) + 10px); border-top: 1px solid #23262d; }
+.reader:not(.chrome) .reader-bar.top { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.reader:not(.chrome) .reader-bar.bottom { transform: translateY(100%); opacity: 0; pointer-events: none; }
+.reader-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.95rem; }
+.reader-count { font-family: var(--font-mono); font-size: 0.8rem; color: #a5acb8; }
+.reader-btn {
+  display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 6px; border: 1.5px solid #2f333b;
+  background: transparent; color: inherit; cursor: pointer;
+}
+.reader-btn svg { width: 22px; height: 22px; }
+.reader-btn.text { width: auto; padding: 0 12px; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; }
+.reader-btn[aria-pressed="true"] { background: #ffe14d; color: #15171c; border-color: #ffe14d; }
+.reader-tools { display: flex; gap: 8px; justify-content: center; }
+.reader-slider { width: 100%; accent-color: #ffe14d; }
+
+.reader-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.reader-spread { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; gap: 0; }
+.reader-page { max-width: 100%; max-height: 100%; object-fit: contain; }
+.reader-spread.n2 .reader-page { max-width: 50%; }
+.reader-pending { width: min(70vw, 600px); aspect-ratio: 2 / 3; max-height: 92%; background: #16181d; border-radius: 4px; }
+.reader-missing { max-width: 340px; padding: 20px; text-align: center; color: #a5acb8; border: 1px dashed #3a3f48; border-radius: 6px; }
+
+.reader-scroll { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.reader-strip { display: flex; justify-content: center; }
+.reader-strip-img { width: 100%; max-width: 900px; height: auto; display: block; }
+.reader-strip .reader-pending { width: 100%; max-width: 900px; max-height: none; }
+
+.reader-stage.guided { overflow: hidden; display: block; }
+.reader-guided-page { position: absolute; top: 0; left: 0; transform-origin: 0 0; transition: transform 320ms cubic-bezier(.3,.7,.2,1); }
+/* Dims everything outside the current panel */
+.reader-spotlight {
+  position: absolute; pointer-events: none; border-radius: 2px;
+  box-shadow: 0 0 0 200vmax rgba(11, 12, 15, 0.86); transition: all 320ms cubic-bezier(.3,.7,.2,1);
+}
+.reader-panelcount {
+  position: absolute; right: 12px; bottom: calc(var(--safe-bottom) + 120px); font-family: var(--font-mono); font-size: 0.72rem;
+  background: rgba(11,12,15,.8); padding: 3px 8px; border-radius: 4px; color: #a5acb8; pointer-events: none;
+}
+.reader:not(.chrome) .reader-panelcount { bottom: calc(var(--safe-bottom) + 12px); }
+
+@media (prefers-reduced-motion: reduce) { .reader-guided-page, .reader-bar, .reader-spotlight { transition: none; } }

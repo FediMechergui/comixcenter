@@ -1,0 +1,25 @@
+# ComixCenter app (Spec 2)
+fastapi>=0.142
+uvicorn[standard]>=0.54
+sqlalchemy>=2.1
+alembic>=1.20
+python-multipart>=0.0.32
+python-dotenv>=1.2
+mokkari>=4.9          # Metron API client
+simyan>=4.2           # Comic Vine API client
+rapidfuzz>=3.14
+pillow>=12.3
+img2pdf>=0.6
+pymupdf>=1.28         # PDF page rendering
+numpy>=2.5            # panel detection
+py7zr>=1.1            # CB7
+rarfile>=4.5          # CBR (needs unrar, 7-Zip or bsdtar; Windows 10+ ships bsdtar as tar.exe)
+pydantic>=2.13
+httpx>=0.28
+
+# Tests
+pytest>=9.1
+
+# Legacy scraper code in app/ (not used by the comix app)
+beautifulsoup4>=4.15
+websockets>=16.1
