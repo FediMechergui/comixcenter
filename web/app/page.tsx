@@ -3,7 +3,8 @@ import Link from "next/link";
 import { IssueTile, OrderTile } from "@/components/cards";
 import * as I from "@/components/icons";
 import { Empty, ErrorBox, Loading, plural, ProgressBar, Section } from "@/components/ui";
-import { apiUrl, useApi } from "@/lib/api";
+import { ApiError, apiUrl, defaultServer, serverUrl, setServerUrl, useApi } from "@/lib/api";
+import { useState } from "react";
 import type { LibraryFile, OrderCard, Page, Progress, PublisherCard, Status } from "@/lib/types";
 
 export default function HomePage() {
@@ -13,7 +14,11 @@ export default function HomePage() {
   const orders = useApi<OrderCard[]>("/api/orders");
   const publishers = useApi<PublisherCard[]>("/api/publishers");
 
-  if (status.error) return <ErrorBox error={status.error} retry={() => status.mutate()} />;
+  if (status.error) {
+    return status.error instanceof ApiError && status.error.status === 0
+      ? <ConnectCard retry={() => status.mutate()} />
+      : <ErrorBox error={status.error} retry={() => status.mutate()} />;
+  }
   if (!status.data) return <Loading lines={6} />;
   const s = status.data;
   const emptyCatalog = s.counts.series === 0 && s.counts.library_files === 0;
@@ -98,5 +103,39 @@ function Onboarding({ status }: { status: Status }) {
         <Link className="btn secondary" href="/library"><I.Upload />Import comics</Link>
       </div>
     </section>
+  );
+}
+
+/** First run on a phone, or the server is off: ask where it is, right on the home screen. */
+function ConnectCard({ retry }: { retry: () => void }) {
+  const [address, setAddress] = useState(() => serverUrl());
+  const [checking, setChecking] = useState(false);
+  return (
+    <div className="stack-lg">
+      <header className="pagehead" style={{ marginBottom: 0 }}>
+        <span className="eyebrow">Not connected</span>
+        <h1 className="title">Connect to your server</h1>
+      </header>
+      <form className="card stack" onSubmit={async (e) => {
+        e.preventDefault();
+        setServerUrl(address.trim() === defaultServer() ? null : address.trim());
+        setChecking(true);
+        await retry();
+        setChecking(false);
+      }}>
+        <p className="small" style={{ margin: 0 }}>
+          ComixCenter runs on your computer. Start it with <code>start-server.bat</code>, then enter the address it prints
+          (it looks like <code>http://192.168.1.20:8000</code>). Your phone needs to be on the same Wi-Fi.
+        </p>
+        <label className="label">Server address
+          <input className="input" type="url" inputMode="url" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="http://192.168.1.20:8000" />
+        </label>
+        <div className="row">
+          <button className="btn" disabled={checking}>{checking ? "Connecting…" : "Connect"}</button>
+          <Link className="btn secondary" href="/library"><I.Book />Read saved comics</Link>
+        </div>
+        <p className="small muted" style={{ margin: 0 }}>Trying {serverUrl()}.</p>
+      </form>
+    </div>
   );
 }

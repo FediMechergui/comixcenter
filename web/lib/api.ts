@@ -50,15 +50,21 @@ export class ApiError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
 
+const TIMEOUT_MS = 10_000;          // a server that vanished from the Wi-Fi shouldn't hang the app
+const UPLOAD_TIMEOUT_MS = 15 * 60_000;
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), init.body instanceof FormData ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS);
   const token = adminToken();
   if (token) headers.set("X-Admin-Token", token);
   if (init.body && !(init.body instanceof FormData)) headers.set("Content-Type", "application/json");
   let resp: Response;
   try {
-    resp = await fetch(apiUrl(path), { ...init, headers });
+    resp = await fetch(apiUrl(path), { ...init, headers, signal: controller.signal });
   } catch {
+    clearTimeout(timer);
     // Offline: comics saved for offline reading keep their details in the cache
     if (!init.method || init.method === "GET") {
       const { cachedJson } = await import("@/lib/offline");
@@ -67,6 +73,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
     throw new ApiError(0, `Can't reach the ComixCenter server at ${serverUrl() || "this address"}. Check the address in Settings and that the server is running.`);
   }
+  clearTimeout(timer);
   if (!resp.ok) {
     let detail = resp.statusText;
     try {

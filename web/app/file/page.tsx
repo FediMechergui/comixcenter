@@ -8,6 +8,7 @@ import { useNumberParam, withParams } from "@/components/params";
 import { Picker } from "@/components/pickers";
 import { ErrorBox, Facts, formatDate, Loading, PageHead, Section, useAction } from "@/components/ui";
 import { api, apiUrl, refresh, useApi } from "@/lib/api";
+import { exportPdf } from "@/lib/native";
 import { removeOffline, saveOffline, savedPageCount } from "@/lib/offline";
 import type { LibraryFile } from "@/lib/types";
 
@@ -43,7 +44,10 @@ function FilePage() {
             <Facts items={[[f.page_count, "Pages"], [`${(f.size / 1048576).toFixed(1)} MB`, "Size"], [formatDate(f.added_at, "full"), "Added"]]} />
             <div className="row">
               <Link className="btn" href={`/read?file=${f.id}`}><I.Book />{f.current_page > 0 && !f.finished ? `Continue from page ${f.current_page + 1}` : "Read"}</Link>
-              <a className="btn secondary" href={apiUrl(`/api/library/${f.id}/export.pdf`)} download target="_blank" rel="noopener"><I.Download />Export PDF</a>
+              <button className="btn secondary" disabled={busy}
+                onClick={() => run(() => exportPdf(f.id, `${f.name.replace(/\.[^.]+$/, "")}.pdf`), (how) => how === "shared" ? "PDF shared" : how === "downloaded" ? "PDF downloading" : "")}>
+                <I.Download />Export PDF
+              </button>
               <button className="btn secondary" disabled={saving !== null}
                 onClick={async () => {
                   if (offline) { await removeOffline(f.id, f.page_count); setSaved(0); return; }

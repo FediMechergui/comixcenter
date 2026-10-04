@@ -37,6 +37,7 @@ def test_status_reports_sources_and_counts(loaded):
     s = loaded.get("/api/status").json()
     assert s["sources"] == {"metron": False, "comicvine": False}   # fakes injected, no real keys
     assert s["counts"]["series"] >= 4 and s["counts"]["arcs"] == 2
+    assert all(re.fullmatch(r"http://\d+\.\d+\.\d+\.\d+:\d+", u) for u in s["lan_urls"])
 
 
 def test_browse_publisher_universe_era_series_issue(loaded):

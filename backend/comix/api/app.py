@@ -3,7 +3,7 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -16,6 +16,7 @@ from comix.bootstrap import bootstrap
 from comix.config import BACKEND_DIR, get_settings
 from comix.db import get_db, session_scope, upgrade_database
 from comix.ingest.jobs import Worker
+from comix.network import lan_addresses
 from comix.models import Arc, Character, Issue, Job, JobStatus, LibraryFile, ReadingOrder, Series, Team
 
 log = logging.getLogger("comix")
@@ -52,7 +53,7 @@ def create_app(run_migrations: bool = True, start_worker: bool = None) -> FastAP
     app.include_router(admin.router)
 
     @app.get("/api/status", tags=["system"])
-    def status(db: Session = Depends(get_db)):
+    def status(request: Request, db: Session = Depends(get_db)):
         count = lambda model: db.scalar(select(func.count()).select_from(model))
         jobs = dict(db.execute(select(Job.status, func.count()).group_by(Job.status)).all())
         return {
@@ -64,6 +65,8 @@ def create_app(run_migrations: bool = True, start_worker: bool = None) -> FastAP
             "counts": {"series": count(Series), "issues": count(Issue), "arcs": count(Arc), "characters": count(Character),
                        "teams": count(Team), "reading_orders": count(ReadingOrder), "library_files": count(LibraryFile)},
             "scan_dirs": [str(p) for p in settings.scan_dirs],
+            # Addresses a phone on the same Wi-Fi can use (the server must listen with --lan)
+            "lan_urls": [f"http://{ip}:{request.url.port or 8000}" for ip in lan_addresses()],
         }
 
     if WEB_DIR.is_dir():

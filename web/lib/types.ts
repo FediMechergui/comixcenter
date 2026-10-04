@@ -17,6 +17,7 @@ export interface Status {
   worker: { running: boolean; current_job_id: number | null; queued: number; failed: number };
   counts: Record<"series" | "issues" | "arcs" | "characters" | "teams" | "reading_orders" | "library_files", number>;
   scan_dirs: string[];
+  lan_urls: string[];
 }
 
 export interface PublisherCard {

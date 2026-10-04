@@ -1,0 +1,7 @@
+# Shell scripts must keep LF endings to run on macOS/Linux; Windows scripts keep CRLF
+* text=auto
+web/android/gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jar binary
