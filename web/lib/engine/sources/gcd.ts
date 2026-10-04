@@ -194,8 +194,8 @@ export function createGcdClient(opts: GcdClientOptions) {
   return {
     pacer,
     seriesByName,
-    /** Same as seriesByName (the name the engine's sync code uses) */
-    searchSeries: (name: string, year?: number | null) => seriesByName(name, year),
+    /** seriesByName capped at two pages: each page is a request against GCD's small quota */
+    searchSeries: (name: string, year?: number | null) => seriesByName(name, year, 2),
     issue: (id: number) => detail(`issue/${id}/`, ttl.issue, mapGcdIssue),
     series: (id: number) => detail(`series/${id}/`, ttl.series, mapGcdSeries),
     publisher: (id: number) => detail(`publisher/${id}/`, ttl.publisher, mapGcdPublisher),

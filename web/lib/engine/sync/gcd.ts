@@ -6,6 +6,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NotFoundError } from "../contracts";
 import { db, nowIso, type Id } from "../db";
+import { defaultProcess, foldAccents } from "../parsing";
 import { parseGcdCharacters, parseGcdCredits } from "../sources/gcd";
 import { assignSeriesUniverses } from "../taxonomy";
 import {
@@ -154,9 +155,18 @@ async function characterEvents(identityId: Id, issueId: Id, ref: { firstAppearan
   }
 }
 
-/** GCD series search for "find online", newest first within equal names. */
+/** "The Amazing Spider-Man" → "amazing spider man", for ranking search hits. */
+function bareTitle(name: string): string {
+  return defaultProcess(foldAccents(name)).replace(/^(the|a|an|le|la|les|l|der|die|das|el|il) /, "");
+}
+
+/** GCD series search for "find online": exact titles first, then prefixes, then longer runs. */
 export async function searchGcd(api: GcdApi, name: string, year?: number | null) {
   const results = await api.searchSeries(name, year);
+  const want = bareTitle(name);
+  const rank = (s: any) => { const t = bareTitle(s.name ?? ""); return t === want ? 0 : t.startsWith(want) ? 1 : 2; };
+  const issues = (s: any) => (s.active_issue_ids ?? s.active_issues ?? []).length;
+  results.sort((a: any, b: any) => rank(a) - rank(b) || issues(b) - issues(a));
   return results.map((s: any) => ({
     gcd_id: s.id, name: s.name, year_began: s.year_began ?? null, year_end: s.year_ended ?? null,
     issue_count: (s.active_issue_ids ?? s.active_issues ?? []).length, country: s.country ?? null, language: s.language ?? null,
