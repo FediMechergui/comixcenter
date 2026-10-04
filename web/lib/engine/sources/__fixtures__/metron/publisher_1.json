@@ -1,0 +1,15 @@
+{
+  "id": 1,
+  "name": "Marvel",
+  "alt_names": [
+    "Marvel Comics"
+  ],
+  "founded": 1939,
+  "country": "US",
+  "desc": "Marvel Worldwide Inc., commonly referred to as Marvel Comics...",
+  "image": "https://static.metron.cloud/media/publisher/2018/11/11/marvel.jpg",
+  "cv_id": 31,
+  "gcd_id": 78,
+  "resource_url": "https://metron.cloud/publisher/marvel/",
+  "modified": "2024-03-18T14:02:11.552839-04:00"
+}

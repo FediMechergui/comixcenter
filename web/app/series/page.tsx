@@ -11,7 +11,8 @@ import type { PublisherDetail, SeriesDetail } from "@/lib/types";
 function SeriesPage() {
   const id = useNumberParam("id");
   const key = id ? `/api/series/${id}` : null;
-  const { data, error, mutate } = useApi<SeriesDetail>(key);
+  // While covers and details are still arriving, keep the page fresh
+  const { data, error, mutate } = useApi<SeriesDetail>(key, { refreshInterval: (d) => (d?.details_pending ? 5000 : 0) });
   const { run, busy } = useAction();
   const [curate] = useCurateMode();
   if (error) return <ErrorBox error={error} retry={() => mutate()} />;
@@ -36,6 +37,11 @@ function SeriesPage() {
           <div className="stack" style={{ flex: 1, minWidth: 220 }}>
             <Facts items={[[years, "Published"], [data.issues.length, "Issues"], [data.read_count, "Read"], [data.status, "Status"]]} />
             {data.issues.length > 0 && <ProgressBar read={data.read_count} total={data.issues.length} />}
+            {!!data.details_pending && (
+              <p className="small muted" style={{ margin: 0 }} role="status">
+                Fetching details for {plural(data.details_pending, "issue")}. They fill in as they arrive.
+              </p>
+            )}
             {data.description && <p className="prose" style={{ margin: 0 }}>{data.description}</p>}
             <div className="row">
               <button className="btn secondary small" disabled={busy}

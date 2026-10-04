@@ -1,0 +1,17 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Marvel",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    },
+    {
+      "id": 2,
+      "name": "DC Comics",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ]
+}

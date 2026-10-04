@@ -1,0 +1,141 @@
+{
+  "error": "OK",
+  "limit": 1,
+  "offset": 0,
+  "number_of_page_results": 1,
+  "number_of_total_results": 1,
+  "status_code": 1,
+  "results": {
+    "aliases": "Spidey\r\nWeb-Head\r\nFriendly Neighborhood Spider-Man",
+    "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-1443/",
+    "birth": "Aug 10, 1962",
+    "character_enemies": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-1458/",
+        "id": 1458,
+        "name": "Green Goblin",
+        "site_detail_url": "https://comicvine.gamespot.com/green-goblin/4005-1458/"
+      }
+    ],
+    "character_friends": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-1460/",
+        "id": 1460,
+        "name": "Mary Jane Watson",
+        "site_detail_url": "https://comicvine.gamespot.com/mary-jane-watson/4005-1460/"
+      }
+    ],
+    "count_of_issue_appearances": 13000,
+    "creators": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/person/4040-2195/",
+        "id": 2195,
+        "name": "Steve Ditko",
+        "site_detail_url": "https://comicvine.gamespot.com/steve-ditko/4040-2195/"
+      }
+    ],
+    "date_added": "2008-06-06 11:08:00",
+    "date_last_updated": "2024-02-01 09:13:50",
+    "deck": "Bitten by a radioactive spider, Peter Parker uses his powers to fight crime.",
+    "description": "<p>Peter Parker was bitten by a <b>radioactive</b> spider.</p>",
+    "first_appeared_in_issue": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-6686/",
+      "id": 6686,
+      "name": "Spider-Man!",
+      "issue_number": "15"
+    },
+    "gender": 1,
+    "id": 1443,
+    "image": {
+      "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/11131/111310034/spider-man.jpg",
+      "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/11131/111310034/spider-man.jpg",
+      "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/11131/111310034/spider-man.jpg",
+      "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/11131/111310034/spider-man.jpg",
+      "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/11131/111310034/spider-man.jpg",
+      "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/11131/111310034/spider-man.jpg",
+      "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/11131/111310034/spider-man.jpg",
+      "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/11131/111310034/spider-man.jpg",
+      "original_url": "https://comicvine.gamespot.com/a/uploads/original/11131/111310034/spider-man.jpg",
+      "image_tags": "All Images"
+    },
+    "issue_credits": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-6686/",
+        "id": 6686,
+        "name": "Spider-Man!",
+        "site_detail_url": "https://comicvine.gamespot.com/amazing-fantasy-15/4000-6686/"
+      }
+    ],
+    "issues_died_in": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-107021/",
+        "id": 107021,
+        "name": "Spider-Man: The Other",
+        "site_detail_url": "https://comicvine.gamespot.com/issue/4000-107021/"
+      }
+    ],
+    "movies": [],
+    "name": "Spider-Man",
+    "origin": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/origin/4030-4/",
+      "id": 4,
+      "name": "Human",
+      "site_detail_url": "https://comicvine.gamespot.com/human/4030-4/"
+    },
+    "powers": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/power/4035-1/",
+        "id": 1,
+        "name": "Agility"
+      }
+    ],
+    "publisher": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+      "id": 31,
+      "name": "Marvel",
+      "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+    },
+    "real_name": "Peter Benjamin Parker",
+    "site_detail_url": "https://comicvine.gamespot.com/spider-man/4005-1443/",
+    "story_arc_credits": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/story_arc/4045-55660/",
+        "id": 55660,
+        "name": "Venom",
+        "site_detail_url": "https://comicvine.gamespot.com/venom/4045-55660/"
+      }
+    ],
+    "team_enemies": [],
+    "team_friends": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/team/4060-3806/",
+        "id": 3806,
+        "name": "Avengers",
+        "site_detail_url": "https://comicvine.gamespot.com/avengers/4060-3806/"
+      }
+    ],
+    "teams": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/team/4060-3806/",
+        "id": 3806,
+        "name": "Avengers",
+        "site_detail_url": "https://comicvine.gamespot.com/avengers/4060-3806/"
+      },
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/team/4060-54477/",
+        "id": 54477,
+        "name": "New Avengers",
+        "site_detail_url": "https://comicvine.gamespot.com/new-avengers/4060-54477/"
+      }
+    ],
+    "volume_credits": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-2127/",
+        "id": 2127,
+        "name": "The Amazing Spider-Man",
+        "site_detail_url": "https://comicvine.gamespot.com/the-amazing-spider-man/4050-2127/"
+      }
+    ]
+  },
+  "version": "1.0"
+}

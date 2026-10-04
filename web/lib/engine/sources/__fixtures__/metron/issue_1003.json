@@ -1,0 +1,138 @@
+{
+  "id": 1003,
+  "publisher": {
+    "id": 1,
+    "name": "Marvel"
+  },
+  "imprint": null,
+  "series": {
+    "id": 10,
+    "name": "Amazing Spider-Man",
+    "sort_name": "Amazing Spider-Man",
+    "volume": 1,
+    "year_began": 1963,
+    "series_type": {
+      "id": 1,
+      "name": "Ongoing Series"
+    },
+    "genres": [
+      {
+        "id": 10,
+        "name": "Super-Hero"
+      }
+    ],
+    "alt_names": [],
+    "language": "en"
+  },
+  "number": "300",
+  "alt_number": "",
+  "title": "",
+  "name": [
+    "Venom"
+  ],
+  "cover_date": "1988-05-01",
+  "store_date": "1988-01-12",
+  "foc_date": null,
+  "price": "1.50",
+  "price_currency": "USD",
+  "rating": {
+    "id": 1,
+    "name": "Unknown"
+  },
+  "sku": "",
+  "isbn": "",
+  "upc": "",
+  "page": 52,
+  "desc": "Eddie Brock becomes Venom.",
+  "image": "https://static.metron.cloud/media/issue/2018/11/11/asm-300.jpg",
+  "cover_hash": "c3c3e3c3c3c38f0f",
+  "arcs": [
+    {
+      "id": 300,
+      "name": "Venom",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ],
+  "credits": [
+    {
+      "id": 900,
+      "creator": "David Michelinie",
+      "role": [
+        {
+          "id": 1,
+          "name": "Writer"
+        }
+      ]
+    },
+    {
+      "id": 901,
+      "creator": "Todd McFarlane",
+      "role": [
+        {
+          "id": 2,
+          "name": "Penciller"
+        },
+        {
+          "id": 3,
+          "name": "Inker"
+        },
+        {
+          "id": 7,
+          "name": "Cover"
+        }
+      ]
+    }
+  ],
+  "characters": [
+    {
+      "id": 100,
+      "name": "Spider-Man",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    },
+    {
+      "id": 102,
+      "name": "Mary Jane Watson",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    },
+    {
+      "id": 103,
+      "name": "Venom (Eddie Brock)",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ],
+  "teams": [
+    {
+      "id": 200,
+      "name": "Avengers",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ],
+  "universes": [
+    {
+      "id": 1,
+      "name": "Earth 616",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ],
+  "reprints": [
+    {
+      "id": 5001,
+      "issue": "Amazing Spider-Man (1963) #299"
+    }
+  ],
+  "variants": [
+    {
+      "name": "Newsstand",
+      "price": "1.50",
+      "sku": "",
+      "upc": "071486020026",
+      "image": "https://static.metron.cloud/media/variants/asm-300-ns.jpg"
+    }
+  ],
+  "average_rating": 4.5,
+  "rating_count": 12,
+  "cv_id": 7000,
+  "gcd_id": 44451,
+  "resource_url": "https://metron.cloud/issue/amazing-spider-man-1963-300/",
+  "modified": "2024-03-18T14:02:11.552839-04:00"
+}

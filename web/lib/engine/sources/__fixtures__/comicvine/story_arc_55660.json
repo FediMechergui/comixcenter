@@ -1,0 +1,54 @@
+{
+  "error": "OK",
+  "limit": 1,
+  "offset": 0,
+  "number_of_page_results": 1,
+  "number_of_total_results": 1,
+  "status_code": 1,
+  "results": {
+    "aliases": null,
+    "api_detail_url": "https://comicvine.gamespot.com/api/story_arc/4045-55660/",
+    "count_of_isssue_appearances": 1,
+    "date_added": "2012-01-01 00:00:00",
+    "date_last_updated": "2020-01-01 00:00:00",
+    "deck": "Venom debuts.",
+    "description": "<p>Eddie Brock bonds with the symbiote.</p>",
+    "first_appeared_in_issue": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-7000/",
+      "id": 7000,
+      "name": "Venom",
+      "issue_number": "300"
+    },
+    "id": 55660,
+    "image": {
+      "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/venom-arc.jpg",
+      "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/venom-arc.jpg",
+      "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/venom-arc.jpg",
+      "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/venom-arc.jpg",
+      "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/venom-arc.jpg",
+      "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/venom-arc.jpg",
+      "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/venom-arc.jpg",
+      "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/venom-arc.jpg",
+      "original_url": "https://comicvine.gamespot.com/a/uploads/original/venom-arc.jpg",
+      "image_tags": "All Images"
+    },
+    "issues": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-7000/",
+        "id": 7000,
+        "name": "Venom",
+        "site_detail_url": "https://comicvine.gamespot.com/issue/4000-7000/"
+      }
+    ],
+    "movies": [],
+    "name": "Venom",
+    "publisher": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+      "id": 31,
+      "name": "Marvel",
+      "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+    },
+    "site_detail_url": "https://comicvine.gamespot.com/venom/4045-55660/"
+  },
+  "version": "1.0"
+}

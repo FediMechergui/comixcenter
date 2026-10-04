@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Thumb } from "@/components/cards";
+import { OnlineResults } from "@/components/online";
 import { useSetParams, useStringParam, withParams } from "@/components/params";
 import { Empty, ErrorBox, Loading, PageHead, Segmented } from "@/components/ui";
 import { qs, useApi } from "@/lib/api";
@@ -42,7 +43,7 @@ function SearchPage() {
       {error && <ErrorBox error={error} retry={() => mutate()} />}
       {q && isLoading && !data && <Loading />}
       {!q && <Empty title="Search the whole catalog">Try a hero, a writer, an event like &ldquo;Secret Wars&rdquo;, or an issue like &ldquo;amazing spider-man 300&rdquo;.</Empty>}
-      {data && q && data.results.length === 0 && <Empty title={`Nothing for “${q}”`}>Only synced comics are searchable. Add more from Metron in Curate.</Empty>}
+      {data && q && data.results.length === 0 && <Empty title={`Nothing in your catalog for “${q}”`}>Look below to find it online and add it.</Empty>}
       {data && data.results.length > 0 && (
         <div className="list">
           {data.results.map((h) => (
@@ -54,6 +55,7 @@ function SearchPage() {
           ))}
         </div>
       )}
+      {q && <div style={{ marginTop: 28 }}><OnlineResults q={q} /></div>}
     </>
   );
 }

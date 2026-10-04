@@ -3,7 +3,7 @@ import Link from "next/link";
 import { IssueTile, OrderTile } from "@/components/cards";
 import * as I from "@/components/icons";
 import { Empty, ErrorBox, Loading, plural, ProgressBar, Section } from "@/components/ui";
-import { ApiError, apiUrl, defaultServer, serverUrl, setServerUrl, useApi } from "@/lib/api";
+import { ApiError, apiUrl, dataMode, defaultServer, serverUrl, setServerUrl, useApi } from "@/lib/api";
 import { useState } from "react";
 import type { LibraryFile, OrderCard, Page, Progress, PublisherCard, Status } from "@/lib/types";
 
@@ -15,7 +15,7 @@ export default function HomePage() {
   const publishers = useApi<PublisherCard[]>("/api/publishers");
 
   if (status.error) {
-    return status.error instanceof ApiError && status.error.status === 0
+    return status.error instanceof ApiError && status.error.status === 0 && dataMode() === "server"
       ? <ConnectCard retry={() => status.mutate()} />
       : <ErrorBox error={status.error} retry={() => status.mutate()} />;
   }
@@ -85,21 +85,28 @@ export default function HomePage() {
 }
 
 function Onboarding({ status }: { status: Status }) {
-  const keys = status.sources.metron;
+  const device = dataMode() === "device";
   return (
     <section className="card stack" aria-labelledby="start-h">
       <h2 className="h2" id="start-h">Start your catalog</h2>
       <ol className="stack" style={{ margin: 0, paddingLeft: 20 }}>
         <li>
-          <strong>Connect Metron{status.sources.comicvine ? " and Comic Vine" : ""}.</strong>{" "}
-          {keys ? <span className="muted">Metron is connected{status.sources.comicvine ? ", and so is Comic Vine." : ". Add COMICVINE_API_KEY for first appearances, deaths and rosters."}</span>
-            : <span className="muted">Add your keys to <code>backend/.env</code> (see <code>.env.example</code>) and restart the server.</span>}
+          <strong>Find what you read.</strong>{" "}
+          <span className="muted">Search any series from any publisher and add it. Covers, credits, stories and characters come with it.</span>
         </li>
-        <li><strong>Sync what you read.</strong> <span className="muted">Search Metron for a series, event or character and add it.</span></li>
+        <li>
+          <strong>{status.sources.metron ? "Metron is connected." : "Connect Metron for arcs, characters and teams."}</strong>{" "}
+          <span className="muted">
+            {status.sources.metron
+              ? (status.sources.comicvine ? "Comic Vine too: first appearances, deaths and rosters are on." : "Add a Comic Vine key for first appearances, deaths and rosters.")
+              : device ? "Free accounts; add them in Settings." : "Add your keys to backend/.env (see .env.example) and restart the server."}
+          </span>
+        </li>
         <li><strong>Bring your own comics.</strong> <span className="muted">Import CBZ, CBR, CB7, PDF or EPUB files, or connect an OPDS server.</span></li>
       </ol>
       <div className="row">
-        <Link className="btn" href="/curate"><I.Plus />Add from Metron</Link>
+        <Link className="btn" href={device ? "/search" : "/curate"}><I.Search />Find comics</Link>
+        {device && <Link className="btn secondary" href="/settings"><I.Gear />Settings</Link>}
         <Link className="btn secondary" href="/library"><I.Upload />Import comics</Link>
       </div>
     </section>

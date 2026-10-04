@@ -4,7 +4,7 @@ import { CornerBox, Cover, IssueTile } from "@/components/cards";
 import * as I from "@/components/icons";
 import { useNumberParam, withParams } from "@/components/params";
 import { ErrorBox, Facts, formatDate, Loading, PageHead, Section, TierChip, useAction, useCurateMode } from "@/components/ui";
-import { api, refresh, useApi } from "@/lib/api";
+import { api, dataMode, refresh, useApi } from "@/lib/api";
 import type { IssueDetail } from "@/lib/types";
 
 const EVENT_LABEL: Record<string, string> = { first_appearance: "First appearance", death: "Death", resurrection: "Return", costume: "New costume" };
@@ -12,7 +12,7 @@ const EVENT_LABEL: Record<string, string> = { first_appearance: "First appearanc
 function IssuePage() {
   const id = useNumberParam("id");
   const key = id ? `/api/issues/${id}` : null;
-  const { data: d, error, mutate } = useApi<IssueDetail>(key);
+  const { data: d, error, mutate } = useApi<IssueDetail>(key, { refreshInterval: (x) => (x && !x.deep_synced && dataMode() === "device" ? 4000 : 0) });
   const { run, busy } = useAction();
   const [curate] = useCurateMode();
   if (error) return <ErrorBox error={error} retry={() => mutate()} />;
@@ -58,6 +58,7 @@ function IssuePage() {
           </div>
         </div>
 
+        {!d.deep_synced && dataMode() === "device" && <p className="small muted" role="status" style={{ margin: 0 }}>Fetching this issue&rsquo;s cover, credits and characters…</p>}
         {d.description && <Section title="The story"><p className="prose" style={{ margin: 0 }}>{d.description}</p></Section>}
 
         {!file && (

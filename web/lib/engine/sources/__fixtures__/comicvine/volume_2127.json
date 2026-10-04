@@ -1,0 +1,89 @@
+{
+  "error": "OK",
+  "limit": 1,
+  "offset": 0,
+  "number_of_page_results": 1,
+  "number_of_total_results": 1,
+  "status_code": 1,
+  "results": {
+    "aliases": "ASM",
+    "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-2127/",
+    "characters": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-1443/",
+        "id": 1443,
+        "name": "Spider-Man",
+        "site_detail_url": "https://comicvine.gamespot.com/spider-man/4005-1443/",
+        "count": "441"
+      }
+    ],
+    "concepts": [],
+    "count_of_issues": 441,
+    "date_added": "2008-06-06 11:08:00",
+    "date_last_updated": "2023-01-01 00:00:00",
+    "deck": null,
+    "description": "<p>The flagship.</p>",
+    "first_issue": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-6687/",
+      "id": 6687,
+      "name": "Spider-Man",
+      "issue_number": "1"
+    },
+    "id": 2127,
+    "image": {
+      "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/asm.jpg",
+      "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/asm.jpg",
+      "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/asm.jpg",
+      "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/asm.jpg",
+      "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/asm.jpg",
+      "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/asm.jpg",
+      "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/asm.jpg",
+      "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/asm.jpg",
+      "original_url": "https://comicvine.gamespot.com/a/uploads/original/asm.jpg",
+      "image_tags": "All Images"
+    },
+    "issues": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-6687/",
+        "id": 6687,
+        "name": "Spider-Man",
+        "site_detail_url": "https://comicvine.gamespot.com/issue/4000-6687/",
+        "issue_number": "1"
+      },
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-7000/",
+        "id": 7000,
+        "name": "Venom",
+        "site_detail_url": "https://comicvine.gamespot.com/issue/4000-7000/",
+        "issue_number": "300"
+      }
+    ],
+    "last_issue": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-41000/",
+      "id": 41000,
+      "name": "Final Chapter",
+      "issue_number": "441"
+    },
+    "locations": [],
+    "name": "The Amazing Spider-Man",
+    "objects": [],
+    "people": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/person/4040-40439/",
+        "id": 40439,
+        "name": "Stan Lee",
+        "site_detail_url": "https://comicvine.gamespot.com/stan-lee/4040-40439/",
+        "count": "110"
+      }
+    ],
+    "publisher": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+      "id": 31,
+      "name": "Marvel",
+      "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+    },
+    "site_detail_url": "https://comicvine.gamespot.com/the-amazing-spider-man/4050-2127/",
+    "start_year": "1963"
+  },
+  "version": "1.0"
+}

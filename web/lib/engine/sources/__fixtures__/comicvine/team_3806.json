@@ -1,0 +1,95 @@
+{
+  "error": "OK",
+  "limit": 1,
+  "offset": 0,
+  "number_of_page_results": 1,
+  "number_of_total_results": 1,
+  "status_code": 1,
+  "results": {
+    "aliases": "Earth's Mightiest Heroes\nThe Mighty Avengers",
+    "api_detail_url": "https://comicvine.gamespot.com/api/team/4060-3806/",
+    "character_enemies": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-2268/",
+        "id": 2268,
+        "name": "Kang",
+        "site_detail_url": "https://comicvine.gamespot.com/kang/4005-2268/"
+      }
+    ],
+    "character_friends": [],
+    "characters": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-1443/",
+        "id": 1443,
+        "name": "Spider-Man",
+        "site_detail_url": "https://comicvine.gamespot.com/spider-man/4005-1443/"
+      },
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/character/4005-1455/",
+        "id": 1455,
+        "name": "Iron Man",
+        "site_detail_url": "https://comicvine.gamespot.com/iron-man/4005-1455/"
+      }
+    ],
+    "count_of_isssue_appearances": 4500,
+    "count_of_team_members": 2,
+    "date_added": "2008-06-06 11:27:37",
+    "date_last_updated": "2024-01-12 10:00:00",
+    "deck": "Earth's Mightiest Heroes.",
+    "description": "<p>The Avengers.</p>",
+    "disbanded_in_issues": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-110000/",
+        "id": 110000,
+        "name": "Chaos, Part 4: Avengers Finale",
+        "site_detail_url": "https://comicvine.gamespot.com/issue/4000-110000/"
+      }
+    ],
+    "first_appeared_in_issue": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-8394/",
+      "id": 8394,
+      "name": "The Coming of the Avengers!",
+      "issue_number": "1"
+    },
+    "id": 3806,
+    "image": {
+      "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/avengers.jpg",
+      "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/avengers.jpg",
+      "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/avengers.jpg",
+      "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/avengers.jpg",
+      "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/avengers.jpg",
+      "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/avengers.jpg",
+      "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/avengers.jpg",
+      "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/avengers.jpg",
+      "original_url": "https://comicvine.gamespot.com/a/uploads/original/avengers.jpg",
+      "image_tags": "All Images"
+    },
+    "issue_credits": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-8394/",
+        "id": 8394,
+        "name": "The Coming of the Avengers!",
+        "site_detail_url": "https://comicvine.gamespot.com/issue/4000-8394/"
+      }
+    ],
+    "movies": [],
+    "name": "Avengers",
+    "publisher": {
+      "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+      "id": 31,
+      "name": "Marvel",
+      "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+    },
+    "site_detail_url": "https://comicvine.gamespot.com/avengers/4060-3806/",
+    "story_arc_credits": [],
+    "volume_credits": [
+      {
+        "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-2128/",
+        "id": 2128,
+        "name": "The Avengers",
+        "site_detail_url": "https://comicvine.gamespot.com/the-avengers/4050-2128/"
+      }
+    ]
+  },
+  "version": "1.0"
+}

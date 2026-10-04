@@ -1,0 +1,24 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 10,
+      "series": "Amazing Spider-Man (1963)",
+      "year_began": 1963,
+      "year_end": 1998,
+      "issue_count": 441,
+      "volume": 1,
+      "publisher": {
+        "id": 1,
+        "name": "Marvel"
+      },
+      "series_type": {
+        "id": 1,
+        "name": "Ongoing Series"
+      },
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ]
+}

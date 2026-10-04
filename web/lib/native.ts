@@ -1,6 +1,6 @@
 "use client";
 // Things the Android app does differently from a browser.
-import { apiUrl } from "@/lib/api";
+import { apiUrl, dataMode } from "@/lib/api";
 
 export function isNativeApp(): boolean {
   if (typeof window === "undefined") return false;
@@ -32,9 +32,20 @@ export async function exportPdf(fileId: number, fileName: string): Promise<"down
     a.remove();
     return "downloaded";
   }
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`The server couldn't make the PDF (${resp.status})`);
-  const data = toBase64(await resp.arrayBuffer());
+  let bytes: ArrayBuffer;
+  if (dataMode() === "device") {
+    // The comic is on the phone: build the PDF here
+    const [{ exportPdfBytes }, { db }] = await Promise.all([import("@/lib/engine"), import("@/lib/engine/db")]);
+    const file = await db().libraryFiles.get(fileId);
+    if (!file) throw new Error("This comic is no longer in your library");
+    const pdf = await exportPdfBytes(file);
+    bytes = pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength) as ArrayBuffer;
+  } else {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`The server couldn't make the PDF (${resp.status})`);
+    bytes = await resp.arrayBuffer();
+  }
+  const data = toBase64(bytes);
   const [{ Filesystem, Directory }, { Share }] = await Promise.all([import("@capacitor/filesystem"), import("@capacitor/share")]);
   const safe = fileName.replace(/[^\w .()#-]+/g, "_");
   const written = await Filesystem.writeFile({ path: `exports/${safe}`, data, directory: Directory.Cache, recursive: true });

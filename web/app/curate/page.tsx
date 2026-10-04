@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useState } from "react";
 import * as I from "@/components/icons";
 import { ErrorBox, formatDate, PageHead, plural, Section, Segmented, useAction, useCurateMode } from "@/components/ui";
-import { api, qs, refresh, useApi } from "@/lib/api";
+import { api, dataMode, qs, refresh, useApi } from "@/lib/api";
+import { OnlineResults } from "@/components/online";
 import type { Job, Status } from "@/lib/types";
 
 type Kind = "series" | "arc" | "character" | "team" | "reading_list";
@@ -45,16 +46,31 @@ export default function CuratePage() {
               <span className="mono">{s.worker.running ? "Sync worker running" : "Sync worker stopped"} · {plural(s.worker.queued, "job")} waiting</span>
             </div>
           )}
-          {s && !s.sources.metron && (
-            <p className="small" style={{ margin: 0 }}>Add <code>METRON_API_TOKEN</code> (or <code>METRON_USERNAME</code> and <code>METRON_PASSWORD</code>) and <code>COMICVINE_API_KEY</code> to <code>backend/.env</code>, then restart the server.</p>
-          )}
+          {s && !s.sources.metron && (dataMode() === "device"
+            ? <p className="small" style={{ margin: 0 }}>The Grand Comics Database works without an account. <Link href="/settings" style={{ color: "var(--cyan-ink)", fontWeight: 700 }}>Add Metron and Comic Vine</Link> for arcs, characters, teams and first appearances.</p>
+            : <p className="small" style={{ margin: 0 }}>Add <code>METRON_API_TOKEN</code> (or <code>METRON_USERNAME</code> and <code>METRON_PASSWORD</code>) and <code>COMICVINE_API_KEY</code> to <code>backend/.env</code>, then restart the server.</p>)}
         </div>
 
-        <MetronSearch disabled={!s?.sources.metron} />
+        {dataMode() === "device" ? <FindOnline /> : <MetronSearch disabled={!s?.sources.metron} />}
         <StarterPack />
         <Jobs />
       </div>
     </>
+  );
+}
+
+function FindOnline() {
+  const [text, setText] = useState("");
+  const [q, setQ] = useState("");
+  return (
+    <Section title="Add comics">
+      <form className="row" onSubmit={(e) => { e.preventDefault(); setQ(text.trim()); }}>
+        <label className="visually-hidden" htmlFor="fo">Name</label>
+        <input id="fo" className="input" style={{ flex: 1, minWidth: 200 }} placeholder="A series, event, character or team" value={text} onChange={(e) => setText(e.target.value)} />
+        <button className="btn" disabled={!text.trim()}><I.Search />Search online</button>
+      </form>
+      {q && <OnlineResults q={q} />}
+    </Section>
   );
 }
 

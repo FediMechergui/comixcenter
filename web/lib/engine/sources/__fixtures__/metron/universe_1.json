@@ -1,0 +1,14 @@
+{
+  "id": 1,
+  "publisher": {
+    "id": 1,
+    "name": "Marvel"
+  },
+  "name": "Earth 616",
+  "designation": "Earth-616",
+  "desc": "The main Marvel continuity.",
+  "gcd_id": null,
+  "image": null,
+  "resource_url": "https://metron.cloud/universe/earth-616/",
+  "modified": "2024-03-18T14:02:11.552839-04:00"
+}

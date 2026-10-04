@@ -1,0 +1,47 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 2,
+      "issue": {
+        "id": 2001,
+        "series": {
+          "id": 20,
+          "name": "House of X",
+          "volume": 1,
+          "year_began": 2019
+        },
+        "number": "1",
+        "cover_date": "2019-09-01",
+        "store_date": null,
+        "cv_id": 717110,
+        "gcd_id": null,
+        "modified": "2024-03-18T14:02:11.552839-04:00"
+      },
+      "order": 1,
+      "issue_type": "Core Issue"
+    },
+    {
+      "id": 1,
+      "issue": {
+        "id": 2002,
+        "series": {
+          "id": 20,
+          "name": "House of X",
+          "volume": 1,
+          "year_began": 2019
+        },
+        "number": "2",
+        "cover_date": "2019-09-15",
+        "store_date": null,
+        "cv_id": null,
+        "gcd_id": null,
+        "modified": "2024-03-18T14:02:11.552839-04:00"
+      },
+      "order": 2,
+      "issue_type": "Tie-In"
+    }
+  ]
+}

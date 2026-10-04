@@ -4,6 +4,9 @@ import useSWR, { mutate as globalMutate, type SWRConfiguration } from "swr";
 
 const SERVER_KEY = "comix.server";
 const TOKEN_KEY = "comix.adminToken";
+const MODE_KEY = "comix.mode";
+
+export type DataMode = "device" | "server";
 
 function isNativeApp(): boolean {
   if (typeof window === "undefined") return false;
@@ -38,11 +41,26 @@ export function serverUrl(): string {
 }
 
 export function setServerUrl(url: string | null) { writeStore(SERVER_KEY, url ? url.trim() : null); }
+
+/**
+ * Where the catalog lives. The Android app runs everything on the phone ("device") and calls
+ * Metron, Comic Vine and the GCD itself; a browser talks to a ComixCenter server.
+ */
+export function dataMode(): DataMode {
+  if (typeof window === "undefined") return "server";
+  const saved = readStore(MODE_KEY);
+  if (saved === "device" || saved === "server") return saved;
+  return isNativeApp() ? "device" : "server";
+}
+
+export function setDataMode(mode: DataMode | null) { writeStore(MODE_KEY, mode); }
 export function adminToken(): string | null { return typeof window === "undefined" ? null : readStore(TOKEN_KEY); }
 export function setAdminToken(token: string | null) { writeStore(TOKEN_KEY, token); }
 
 /** Absolute URL for API paths (images, downloads) */
 export function apiUrl(path: string): string {
+  // Already absolute: covers from Metron/GCD, and comic pages stored on the phone
+  if (/^(https?:|blob:|data:|memory:|capacitor:)/i.test(path)) return path;
   return `${serverUrl()}${path}`;
 }
 
@@ -53,7 +71,30 @@ export class ApiError extends Error {
 const TIMEOUT_MS = 10_000;          // a server that vanished from the Wi-Fi shouldn't hang the app
 const UPLOAD_TIMEOUT_MS = 15 * 60_000;
 
+let jobListener = false;
+
+/** On the phone: the engine answers, and screens refresh as background syncs finish. */
+async function deviceRequest<T>(path: string, init: RequestInit): Promise<T> {
+  const engine = await import("@/lib/engine");
+  if (!jobListener) {
+    jobListener = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    engine.onJobFinished(() => {
+      if (timer) return;
+      timer = setTimeout(() => { timer = null; globalMutate((key) => typeof key === "string" && !key.startsWith("/api/online")); }, 1500);
+    });
+  }
+  const body = init.body instanceof FormData ? init.body : typeof init.body === "string" ? JSON.parse(init.body) : undefined;
+  try {
+    return (await engine.engineRequest(init.method ?? "GET", path, body)) as T;
+  } catch (e) {
+    if (e instanceof engine.HttpError) throw new ApiError(e.status, e.message);
+    throw new ApiError(500, (e as Error).message);
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (dataMode() === "device") return deviceRequest<T>(path, init);
   const headers = new Headers(init.headers);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), init.body instanceof FormData ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS);

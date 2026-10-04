@@ -7,7 +7,10 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "cap:sync": "npx cap sync android",
-    "apk": "npm run build && npx cap sync android && cd android && gradlew.bat assembleDebug"
+    "apk": "npm run build && npx cap sync android && cd android && gradlew.bat assembleDebug",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prebuild": "node scripts/copy-engine-assets.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
@@ -15,7 +18,13 @@
     "@capacitor/core": "^8.5.2",
     "@capacitor/filesystem": "^8.1.4",
     "@capacitor/share": "^8.0.3",
+    "7z-wasm": "^1.2.0",
+    "dexie": "^4.4.6",
+    "fflate": "^0.8.3",
     "next": "^16.3.8",
+    "node-unrar-js": "^2.0.2",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "swr": "^2.5.1"
@@ -25,6 +34,9 @@
     "@types/node": "^24",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "typescript": "~5.9.3"
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^20.14.5",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.3"
   }
 }

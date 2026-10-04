@@ -29,3 +29,7 @@ web/android/build/
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Engine runtime assets copied from node_modules at build time
+web/public/wasm/
+web/public/pdf.worker.min.mjs

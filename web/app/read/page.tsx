@@ -19,8 +19,8 @@ function readPrefs(): Prefs {
 }
 
 /** An image that resolves through the offline cache; loads when near the viewport if `lazy`. */
-function PageImage({ fileId, index, lazy, className, style, alt, onSize }: {
-  fileId: number; index: number; lazy?: boolean; className?: string; style?: React.CSSProperties; alt: string;
+function PageImage({ file, index, lazy, className, style, alt, onSize }: {
+  file: LibraryFile; index: number; lazy?: boolean; className?: string; style?: React.CSSProperties; alt: string;
   onSize?: (w: number, h: number) => void;
 }) {
   const [src, setSrc] = useState<string | null>(null);
@@ -40,9 +40,9 @@ function PageImage({ fileId, index, lazy, className, style, alt, onSize }: {
     let url: string | null = null;
     let live = true;
     setFailed(false);
-    loadPage(pageUrl(fileId, index)).then((u) => { url = u; if (live) setSrc(u); else URL.revokeObjectURL(u); }).catch(() => live && setFailed(true));
+    loadPage(file.page_urls?.[index] ?? pageUrl(file.id, index)).then((u) => { url = u; if (live) setSrc(u); else URL.revokeObjectURL(u); }).catch(() => live && setFailed(true));
     return () => { live = false; if (url) URL.revokeObjectURL(url); setSrc(null); };
-  }, [fileId, index, visible]);
+  }, [file, index, visible]);
   if (failed) return <div className={`reader-missing ${className ?? ""}`} style={style}>Page {index + 1} couldn&rsquo;t load. Check your connection or save this comic for offline reading.</div>;
   if (!src) return <div ref={holder} className={`reader-pending ${className ?? ""}`} style={style} aria-label={`Loading page ${index + 1}`} />;
   return <img src={src} alt={alt} className={className} style={style} draggable={false}
@@ -156,10 +156,10 @@ function Spread({ file, page, double, rtl }: { file: LibraryFile; page: number; 
   const ordered = rtl ? [...pages].reverse() : pages;
   return (
     <div className={`reader-spread n${ordered.length}`}>
-      {ordered.map((p) => <PageImage key={p} fileId={file.id} index={p} className="reader-page" alt={`Page ${p + 1}`} />)}
+      {ordered.map((p) => <PageImage key={p} file={file} index={p} className="reader-page" alt={`Page ${p + 1}`} />)}
       {/* Prefetch the next spread */}
       <div hidden>{[page + pages.length, page + pages.length + 1].filter((p) => p < file.page_count).slice(0, double ? 2 : 1)
-        .map((p) => <PageImage key={`pre${p}`} fileId={file.id} index={p} alt="" />)}</div>
+        .map((p) => <PageImage key={`pre${p}`} file={file} index={p} alt="" />)}</div>
     </div>
   );
 }
@@ -185,7 +185,7 @@ function Webtoon({ file, start, onPage, onTap }: { file: LibraryFile; start: num
     <div className="reader-scroll" ref={box} onClick={onTap}>
       {Array.from({ length: file.page_count }, (_, i) => (
         <div key={i} data-page={i} className="reader-strip">
-          <PageImage fileId={file.id} index={i} lazy alt={`Page ${i + 1}`} className="reader-strip-img" />
+          <PageImage file={file} index={i} lazy alt={`Page ${i + 1}`} className="reader-strip-img" />
         </div>
       ))}
     </div>
@@ -235,7 +235,7 @@ function Guided({ file, page, panel, setPanel, rtl, onPageChange, onTap, navRef 
     <div className="reader-stage guided" ref={stage} onClick={onTap}>
       {base > 0 && (
         <div className="reader-guided-page" style={{ width: dispW, height: dispH, transform: `translate(${tx}px, ${ty}px) scale(${s})` }}>
-          <PageImage fileId={file.id} index={page} alt={`Page ${page + 1}, panel ${idx + 1}`} style={{ width: "100%", height: "100%" }} />
+          <PageImage file={file} index={page} alt={`Page ${page + 1}, panel ${idx + 1}`} style={{ width: "100%", height: "100%" }} />
         </div>
       )}
       {base > 0 && panels.length > 1 && (

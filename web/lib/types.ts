@@ -63,6 +63,8 @@ export interface SeriesDetail extends SeriesCard {
   issues: IssueCard[]; read_count: number;
   arcs: { id: number; name: string; kind: string; issue_count: number }[];
   writers: { id: number; name: string; issues: number }[];
+  /** Issues whose covers/details are still being fetched (device mode) */
+  details_pending?: number;
 }
 
 export interface LegalLink { service: string; kind: string; url: string }
@@ -179,6 +181,8 @@ export interface LibraryFile {
   match_confidence: number | null; issue: IssueCard | null; candidates: Candidate[];
   parsed: { series?: string; number?: string; year?: number; volume?: string };
   comicinfo: Record<string, unknown>; cover_url: string;
+  /** Pages stored on the phone (device mode) */
+  page_urls?: string[];
 }
 
 export interface Job {

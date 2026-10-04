@@ -7,7 +7,7 @@ import * as I from "@/components/icons";
 import { useNumberParam, withParams } from "@/components/params";
 import { Picker } from "@/components/pickers";
 import { ErrorBox, Facts, formatDate, Loading, PageHead, Section, useAction } from "@/components/ui";
-import { api, apiUrl, refresh, useApi } from "@/lib/api";
+import { api, apiUrl, dataMode, refresh, useApi } from "@/lib/api";
 import { exportPdf } from "@/lib/native";
 import { removeOffline, saveOffline, savedPageCount } from "@/lib/offline";
 import type { LibraryFile } from "@/lib/types";
@@ -26,7 +26,7 @@ function FilePage() {
   const router = useRouter();
   const [saved, setSaved] = useState<number | null>(null);
   const [saving, setSaving] = useState<number | null>(null);
-  useEffect(() => { if (f) savedPageCount(f.id, f.page_count).then(setSaved); }, [f]);
+  useEffect(() => { if (f && dataMode() === "server") savedPageCount(f.id, f.page_count).then(setSaved); }, [f]);
   if (error) return <ErrorBox error={error} retry={() => mutate()} />;
   if (!f) return <Loading />;
   const afterChange = () => { mutate(); refresh("/api/library", "/api/issues"); };
@@ -48,7 +48,7 @@ function FilePage() {
                 onClick={() => run(() => exportPdf(f.id, `${f.name.replace(/\.[^.]+$/, "")}.pdf`), (how) => how === "shared" ? "PDF shared" : how === "downloaded" ? "PDF downloading" : "")}>
                 <I.Download />Export PDF
               </button>
-              <button className="btn secondary" disabled={saving !== null}
+              {dataMode() === "server" && <button className="btn secondary" disabled={saving !== null}
                 onClick={async () => {
                   if (offline) { await removeOffline(f.id, f.page_count); setSaved(0); return; }
                   setSaving(0);
@@ -57,7 +57,7 @@ function FilePage() {
                   finally { setSaving(null); }
                 }}>
                 <I.Offline />{saving !== null ? `Saving ${saving}/${f.page_count}` : offline ? "Remove offline copy" : "Save for offline"}
-              </button>
+              </button>}
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@ function FilePage() {
               <strong>Not matched to the catalog yet</strong>
               <span className="small">
                 Read from the file: {[f.comicinfo.Series ?? f.parsed.series, f.comicinfo.Number ?? f.parsed.number, f.comicinfo.Year ?? f.parsed.year].filter(Boolean).join(" · ") || "nothing usable"}.
-                {" "}If the series isn&rsquo;t in the catalog, ComixCenter looks it up on Metron and tries again.
+                {" "}If the series isn&rsquo;t in the catalog, ComixCenter looks it up online and tries again.
               </span>
             </div>
           )}

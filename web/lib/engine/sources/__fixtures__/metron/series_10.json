@@ -1,0 +1,37 @@
+{
+  "id": 10,
+  "name": "Amazing Spider-Man",
+  "sort_name": "Amazing Spider-Man",
+  "volume": 1,
+  "series_type": {
+    "id": 1,
+    "name": "Ongoing Series"
+  },
+  "status": "Completed",
+  "publisher": {
+    "id": 1,
+    "name": "Marvel"
+  },
+  "imprint": null,
+  "year_began": 1963,
+  "year_end": 1998,
+  "desc": "Peter Parker's flagship title.",
+  "issue_count": 441,
+  "genres": [
+    {
+      "id": 10,
+      "name": "Super-Hero"
+    }
+  ],
+  "associated": [
+    {
+      "id": 2295,
+      "series": "Amazing Spider-Man Annual (1964)"
+    }
+  ],
+  "alt_names": [],
+  "cv_id": 2127,
+  "gcd_id": 1570,
+  "resource_url": "https://metron.cloud/series/amazing-spider-man-1963/",
+  "modified": "2024-03-18T14:02:11.552839-04:00"
+}

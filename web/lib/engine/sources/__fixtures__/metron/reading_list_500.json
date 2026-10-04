@@ -1,0 +1,25 @@
+{
+  "id": 500,
+  "user": {
+    "id": 7,
+    "username": "metron"
+  },
+  "name": "Krakoa Essentials",
+  "slug": "krakoa-essentials",
+  "desc": "Start of the Krakoa era.",
+  "image": null,
+  "list_type": "Event",
+  "is_private": false,
+  "attribution_source": "CBRO",
+  "attribution_url": "",
+  "previous": null,
+  "next": {
+    "id": 501,
+    "name": "Krakoa: Reign of X"
+  },
+  "average_rating": null,
+  "rating_count": 0,
+  "items_url": "https://metron.cloud/api/reading_list/500/items/",
+  "resource_url": "https://metron.cloud/reading-list/krakoa-essentials/",
+  "modified": "2024-03-18T14:02:11.552839-04:00"
+}

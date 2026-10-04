@@ -1,0 +1,18 @@
+{
+  "id": 200,
+  "name": "Avengers",
+  "desc": "Earth's Mightiest Heroes.",
+  "image": null,
+  "creators": [
+    {
+      "id": 902,
+      "name": "Stan Lee",
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ],
+  "universes": [],
+  "cv_id": 3806,
+  "gcd_id": null,
+  "resource_url": "https://metron.cloud/team/avengers/",
+  "modified": "2024-03-18T14:02:11.552839-04:00"
+}

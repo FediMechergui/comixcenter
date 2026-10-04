@@ -1,0 +1,22 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 500,
+      "name": "Krakoa Essentials",
+      "slug": "krakoa-essentials",
+      "user": {
+        "id": 7,
+        "username": "metron"
+      },
+      "list_type": "Event",
+      "is_private": false,
+      "attribution_source": "",
+      "average_rating": null,
+      "rating_count": 0,
+      "modified": "2024-03-18T14:02:11.552839-04:00"
+    }
+  ]
+}

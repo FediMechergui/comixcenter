@@ -1,0 +1,401 @@
+{
+  "error": "OK",
+  "limit": 10,
+  "offset": 0,
+  "number_of_page_results": 10,
+  "number_of_total_results": 12,
+  "status_code": 1,
+  "version": "1.0",
+  "results": [
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3000/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30000/",
+        "id": 30000,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3000,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3000.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3000.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3000.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3000.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3000.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3000.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3000.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3000.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3000.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 1",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3000/",
+      "start_year": "1990"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3001/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30010/",
+        "id": 30010,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3001,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3001.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3001.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3001.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3001.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3001.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3001.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3001.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3001.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3001.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 2",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3001/",
+      "start_year": "1991"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3002/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30020/",
+        "id": 30020,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3002,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3002.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3002.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3002.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3002.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3002.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3002.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3002.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3002.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3002.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 3",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3002/",
+      "start_year": "1992"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3003/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30030/",
+        "id": 30030,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3003,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3003.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3003.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3003.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3003.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3003.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3003.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3003.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3003.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3003.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 4",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3003/",
+      "start_year": "1993"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3004/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30040/",
+        "id": 30040,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3004,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3004.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3004.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3004.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3004.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3004.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3004.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3004.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3004.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3004.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 5",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3004/",
+      "start_year": "1994"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3005/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30050/",
+        "id": 30050,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3005,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3005.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3005.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3005.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3005.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3005.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3005.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3005.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3005.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3005.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 6",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3005/",
+      "start_year": "1995"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3006/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30060/",
+        "id": 30060,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3006,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3006.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3006.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3006.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3006.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3006.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3006.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3006.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3006.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3006.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 7",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3006/",
+      "start_year": "1996"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3007/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30070/",
+        "id": 30070,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3007,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3007.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3007.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3007.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3007.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3007.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3007.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3007.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3007.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3007.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 8",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3007/",
+      "start_year": "1997"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3008/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30080/",
+        "id": 30080,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3008,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3008.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3008.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3008.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3008.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3008.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3008.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3008.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3008.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3008.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 9",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3008/",
+      "start_year": "1998"
+    },
+    {
+      "aliases": null,
+      "api_detail_url": "https://comicvine.gamespot.com/api/volume/4050-3009/",
+      "count_of_issues": 10,
+      "date_added": "2008-06-06 11:08:00",
+      "date_last_updated": "2023-01-01 00:00:00",
+      "deck": null,
+      "description": null,
+      "first_issue": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/issue/4000-30090/",
+        "id": 30090,
+        "name": null,
+        "issue_number": "1"
+      },
+      "id": 3009,
+      "image": {
+        "icon_url": "https://comicvine.gamespot.com/a/uploads/square_avatar/v3009.jpg",
+        "medium_url": "https://comicvine.gamespot.com/a/uploads/scale_medium/v3009.jpg",
+        "screen_url": "https://comicvine.gamespot.com/a/uploads/screen_medium/v3009.jpg",
+        "screen_large_url": "https://comicvine.gamespot.com/a/uploads/screen_kubrick/v3009.jpg",
+        "small_url": "https://comicvine.gamespot.com/a/uploads/scale_small/v3009.jpg",
+        "super_url": "https://comicvine.gamespot.com/a/uploads/scale_large/v3009.jpg",
+        "thumb_url": "https://comicvine.gamespot.com/a/uploads/scale_avatar/v3009.jpg",
+        "tiny_url": "https://comicvine.gamespot.com/a/uploads/square_mini/v3009.jpg",
+        "original_url": "https://comicvine.gamespot.com/a/uploads/original/v3009.jpg",
+        "image_tags": "All Images"
+      },
+      "last_issue": null,
+      "name": "Spider-Man Volume 10",
+      "publisher": {
+        "api_detail_url": "https://comicvine.gamespot.com/api/publisher/4010-31/",
+        "id": 31,
+        "name": "Marvel",
+        "site_detail_url": "https://comicvine.gamespot.com/marvel/4010-31/"
+      },
+      "resource_type": "volume",
+      "site_detail_url": "https://comicvine.gamespot.com/v/4050-3009/",
+      "start_year": "1999"
+    }
+  ]
+}
