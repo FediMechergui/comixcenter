@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { cvText } from "./comicvine";
 import { gcdDate, searchGcd, type GcdApi } from "./gcd";
 
 const series = (id: number, name: string, issues: number) => ({ id, name, year_began: 2000, active_issue_ids: Array.from({ length: issues }, (_, i) => i) });
@@ -23,5 +24,12 @@ describe("gcdDate", () => {
     expect(gcdDate("1987-00-00")).toBe("1987-01-01");
     expect(gcdDate("2012-03-14")).toBe("2012-03-14");
     expect(gcdDate("")).toBeNull();
+  });
+});
+
+describe("cvText", () => {
+  it("drops Comic Vine's cover-credit table", () => {
+    const html = "<p>New parents Marko and Alana risk everything.</p><h4>List of covers and their creators:</h4><table><tr><td>Reg</td><td>Fiona Staples</td></tr></table>";
+    expect(cvText(html)).toBe("New parents Marko and Alana risk everything.");
   });
 });

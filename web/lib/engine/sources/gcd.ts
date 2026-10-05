@@ -191,11 +191,42 @@ export function createGcdClient(opts: GcdClientOptions) {
     return out;
   }
 
+  /**
+   * Name search that finds the exact title even in a long result list. GCD returns every
+   * substring match in alphabetical order, 50 to a page ("saga" has 568 across 12 pages), so
+   * after the first page this binary-searches for the page where the title itself sorts and
+   * returns that page (plus the next when prefix matches run over). ~log2(pages) requests.
+   */
+  async function searchSeries(name: string, year?: number | null): Promise<GcdSeries[]> {
+    const path = `series/name/${encodeURIComponent(name)}/` + (year ? `year/${year}/` : "");
+    const at = (n: number) => page(`${base}${path}?format=json${n > 1 ? `&page=${n}` : ""}`, ttl.search, mapGcdSeries);
+    const first = await at(1);
+    const size = first.results.length;
+    if (!first.next || !size) return first.results;
+    const pages = Math.ceil(first.count / size);
+    if (pages <= 2) return [...first.results, ...(await at(2)).results];
+
+    const want = gcdSortKey(name);
+    const lastKey = (p: GcdPage<GcdSeries>) => gcdSortKey(p.results[p.results.length - 1]?.name ?? "");
+    if (lastKey(first) >= want) return first.results;
+    const seen = new Map<number, GcdPage<GcdSeries>>([[1, first]]);
+    const get = async (n: number) => { if (!seen.has(n)) seen.set(n, await at(n)); return seen.get(n)!; };
+    // Smallest page whose last title sorts at or after the query
+    let lo = 2, hi = pages;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (lastKey(await get(mid)) >= want) hi = mid; else lo = mid + 1;
+    }
+    const target = await get(lo);
+    const out = [...first.results, ...target.results];
+    if (lo < pages && lastKey(target).startsWith(want)) out.push(...(await get(lo + 1)).results);
+    return out;
+  }
+
   return {
     pacer,
     seriesByName,
-    /** seriesByName capped at two pages: each page is a request against GCD's small quota */
-    searchSeries: (name: string, year?: number | null) => seriesByName(name, year, 2),
+    searchSeries,
     issue: (id: number) => detail(`issue/${id}/`, ttl.issue, mapGcdIssue),
     series: (id: number) => detail(`series/${id}/`, ttl.series, mapGcdSeries),
     publisher: (id: number) => detail(`publisher/${id}/`, ttl.publisher, mapGcdPublisher),
@@ -204,6 +235,11 @@ export function createGcdClient(opts: GcdClientOptions) {
     publishers: (pageNumber = 1) =>
       page(`${base}publisher/${pageNumber > 1 ? `?page=${pageNumber}` : ""}`, ttl.publisher, mapGcdPublisher),
   };
+}
+
+/** Approximates GCD's series ordering: case- and accent-insensitive, leading "The" ignored. */
+export function gcdSortKey(name: string): string {
+  return name.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().trim().replace(/^the\s+/, "");
 }
 
 // ── Credit text ──────────────────────────────────────────────────────────────

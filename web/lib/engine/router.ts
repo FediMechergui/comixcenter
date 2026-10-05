@@ -5,7 +5,7 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AuthError, NotFoundError, RateLimitError } from "./contracts";
-import { comicvineConfigured, gcdAccountConfigured, getCredentials, getGcd, getMetron, metronConfigured, NotConfiguredError, saveCredentials, transport, type Credentials } from "./clients";
+import { comicvineConfigured, gcdAccountConfigured, getComicVine, getCredentials, getGcd, getMetron, getSavedCredentials, metronConfigured, NotConfiguredError, saveCredentials, transport, type Credentials } from "./clients";
 import { base64Utf8 } from "./sources/http";
 import { GCD_API } from "./sources/gcd";
 import { db, nowIso, type Id, type Tier } from "./db";
@@ -19,6 +19,7 @@ import * as orders from "./services/orders";
 import { search as localSearch } from "./services/search";
 import { applyStarterPack, starterArcNames } from "./services/starterPack";
 import { deriveMemberships, sharedTeamHistory } from "./services/teams";
+import * as cvSync from "./sync/comicvine";
 import * as gcdSync from "./sync/gcd";
 import * as metronSync from "./sync/metron";
 import { parseOpdsFeed } from "./library";
@@ -65,7 +66,7 @@ route("GET", "/api/device/credentials", async () => {
     metron: metronConfigured(c), comicvine: comicvineConfigured(c), gcd_account: gcdAccountConfigured(c) };
 });
 route("PUT", "/api/device/credentials", async ({ body }) => {
-  const current = await getCredentials();
+  const current = await getSavedCredentials();
   const next: Credentials = { ...current };
   for (const k of ["metron_token", "metron_username", "metron_password", "comicvine_key", "gcd_username", "gcd_password"] as const) {
     if (k in body) next[k] = body[k] ? String(body[k]) : null;
@@ -105,15 +106,28 @@ route("GET", "/api/online/search", async ({ query }) => {
   const kinds = (query.get("kinds") ?? "series").split(",");
   if (!q) return { gcd: [], metron: {} };
   const creds = await getCredentials();
-  const out: { gcd: unknown[]; metron: Record<string, unknown[]>; errors: string[] } = { gcd: [], metron: {}, errors: [] };
+  const out: { comicvine: unknown[]; gcd: unknown[]; gcd_searched: boolean; metron: Record<string, unknown[]>; errors: string[] } =
+    { comicvine: [], gcd: [], gcd_searched: false, metron: {}, errors: [] };
   const tasks: Promise<void>[] = [];
-  if (kinds.includes("series")) tasks.push(gcdSync.searchGcd((await getGcd()), q, year).then(async (rows) => {
+  const searchGcd = () => { out.gcd_searched = true; return getGcd().then((api) => gcdSync.searchGcd(api, q, year)).then(async (rows) => {
     const have = new Map((await db().series.where("gcd_id").anyOf(rows.map((r) => r.gcd_id as number)).toArray()).map((s) => [s.gcd_id, s.id]));
     out.gcd = rows.slice(0, 40).map((r) => ({ ...r, in_catalog: have.has(r.gcd_id as number), local_id: have.get(r.gcd_id as number) ?? null }));
   }).catch((e) => {
     const hint = e instanceof RateLimitError && !gcdAccountConfigured(creds) ? " Sign in with a free comics.org account in Settings to get your own limit." : "";
     out.errors.push(`Grand Comics Database: ${(e as Error).message}.${hint}`.replace("..", "."));
-  }));
+  }); };
+  // Comic Vine ranks by relevance and answers in about a second, so it leads when connected; GCD's
+  // name search is alphabetical and slow, so it runs when Comic Vine has nothing or when asked for.
+  if (kinds.includes("series")) tasks.push((async () => {
+    if (comicvineConfigured(creds)) {
+      try {
+        const rows = await cvSync.searchCvVolumes(await getComicVine(), q);
+        const have = new Map((await db().series.where("cv_id").anyOf(rows.map((r) => r.cv_id)).toArray()).map((s) => [s.cv_id, s.id]));
+        out.comicvine = rows.map((r) => ({ ...r, in_catalog: have.has(r.cv_id), local_id: have.get(r.cv_id) ?? null }));
+      } catch (e) { out.errors.push(`Comic Vine: ${(e as Error).message}`); }
+    }
+    if (!out.comicvine.length || query.get("gcd") === "1") await searchGcd();
+  })());
   if (metronConfigured(creds)) {
     for (const kind of kinds) {
       tasks.push((async () => {
@@ -131,7 +145,8 @@ route("POST", "/api/online/add", async ({ body }) => {
   const source = String(body.source), kind = String(body.kind), id = Number(body.id);
   // GCD throttles anonymous use hard (~15 requests, then most of an hour), so a GCD series brings
   // its issue list now and each issue's cover/details when it is opened. Metron fetches everything.
-  const job = await enqueue(`${source}.${kind}`, source === "gcd" ? { gcd_id: id, deep: false } : { metron_id: id, deep: true, with_issues: true }, P_USER);
+  const payload = source === "gcd" ? { gcd_id: id, deep: false } : source === "comicvine" ? { cv_id: id } : { metron_id: id, deep: true, with_issues: true };
+  const job = await enqueue(`${source}.${kind}`, payload, P_USER);
   if (job.status === "queued") await runJob({ ...job, status: "running", attempts: job.attempts + 1 });
   const done = await db().jobs.get(job.id!);
   if (done?.status === "failed") throw new HttpError(502, done.error ?? "Sync failed");
@@ -156,8 +171,13 @@ route("GET", "/api/issues/:id", async (_r, m) => {
   const detail = found(await catalog.issueDetail(+m[1]), "Issue not found");
   // Opening an issue fetches its full record if we only have the list entry
   if (!detail.deep_synced) {
-    if (detail.metron_id && metronConfigured(await getCredentials())) await enqueue("metron.issue", { metron_id: detail.metron_id }, P_USER);
-    else if (detail.gcd_id) await enqueue("gcd.issue", { gcd_id: detail.gcd_id }, P_USER);
+    const creds = await getCredentials();
+    if (detail.metron_id && metronConfigured(creds)) await enqueue("metron.issue", { metron_id: detail.metron_id }, P_USER);
+    else {
+      // Comic Vine: credits, characters, teams, arcs (fast); GCD: stories and synopses (slower)
+      if (detail.cv_id && comicvineConfigured(creds)) await enqueue("comicvine.issue_full", { issue_id: detail.id }, P_USER);
+      if (detail.gcd_id) await enqueue("gcd.issue", { gcd_id: detail.gcd_id }, detail.cv_id && comicvineConfigured(creds) ? P_USER + 10 : P_USER);
+    }
   }
   return detail;
 });

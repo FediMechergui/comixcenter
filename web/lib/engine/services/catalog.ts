@@ -195,7 +195,9 @@ async function pendingDetails(issues: Issue[]): Promise<number> {
   const metronIds = new Set(issues.map((i) => i.metron_id).filter((x) => x != null));
   const gcdIds = new Set(issues.map((i) => i.gcd_id).filter((x) => x != null));
   const active = (await db().jobs.where("status").anyOf(["queued", "running"]).toArray());
+  const seriesIds = new Set(issues.map((i) => i.series_id));
   return active.filter((j) => (j.kind === "metron.issue" && metronIds.has(Number(j.payload.metron_id)))
+    || (j.kind === "comicvine.series_covers" && seriesIds.has(Number(j.payload.series_id)))
     || (j.kind === "gcd.issue" && gcdIds.has(Number(j.payload.gcd_id)))).length;
 }
 

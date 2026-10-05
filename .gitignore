@@ -33,3 +33,6 @@ web/android/build/
 # Engine runtime assets copied from node_modules at build time
 web/public/wasm/
 web/public/pdf.worker.min.mjs
+
+# Local env files (may hold API credentials baked into app builds)
+.env*.local

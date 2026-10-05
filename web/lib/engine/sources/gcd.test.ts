@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { AuthError, RateLimitError, SourceError } from "../contracts";
 import {
-  createGcdClient, createGcdPacer, flattenGcdCharacters, gcdIdFromUrl, gcdKeyDateToDate, parseGcdCharacters,
+  createGcdClient, createGcdPacer, flattenGcdCharacters, gcdSortKey, gcdIdFromUrl, gcdKeyDateToDate, parseGcdCharacters,
   parseGcdCreditEntries, parseGcdCredits, splitTopLevel,
 } from "./gcd";
 import type { GcdCharacter, GcdStory } from "./gcd";
@@ -45,6 +45,21 @@ describe("GCD client", () => {
     await client.searchSeries("Saga", null);
     expect(http.calls[0].req.headers?.Authorization).toBe(`Basic ${btoa(unescape(encodeURIComponent("reader:pässword")))}`);
     await expect(client.series(1)).rejects.toBeInstanceOf(AuthError);
+  });
+
+  it("jumps to the page where an exact title sorts in a long alphabetical result list", async () => {
+    // 560 substring matches for "saga", 50 per page, in GCD's order
+    const names = [...Array.from({ length: 400 }, (_, i) => `A${String(i).padStart(3, "0")} Saga`), "Saga", "Saga of the Swamp Thing", "The Saga",
+      ...Array.from({ length: 157 }, (_, i) => `Z${String(i).padStart(3, "0")} Saga`)].sort((a, b) => gcdSortKey(a) < gcdSortKey(b) ? -1 : 1);
+    const pageOf = (n: number) => {
+      const results = names.slice((n - 1) * 50, n * 50).map((name, i) => ({ ...fixture("gcd/series_name_ntt_1980.json").results[0], name,
+        api_url: `${API}series/${(n - 1) * 50 + i + 1}/?format=json` }));
+      return respond(200, { count: names.length, next: n * 50 < names.length ? `${API}series/name/saga/?format=json&page=${n + 1}` : null, previous: null, results });
+    };
+    const { http, client } = setup((url) => pageOf(Number(/[?&]page=(\d+)/.exec(url)?.[1] ?? 1)));
+    const found = (await client.searchSeries("saga", null)).map((s) => s.name);
+    expect(found).toEqual(expect.arrayContaining(["Saga", "The Saga", "Saga of the Swamp Thing"]));
+    expect(http.calls.length).toBeLessThanOrEqual(6);
   });
 
   it("returns every substring match (and works without a year)", async () => {

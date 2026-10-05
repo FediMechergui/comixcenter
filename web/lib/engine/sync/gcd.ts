@@ -38,9 +38,9 @@ export function gcdDate(key: string | null | undefined): string | null {
   return `${m[1]}-${month}-${day}`;
 }
 
-/** Variant covers are separate GCD issues; the catalog keeps one record per issue. */
-export function isVariantDescriptor(descriptor: string): boolean {
-  return /\[|variant/i.test(descriptor);
+/** "1 [2nd Printing]" → "1"; "Annual 1 [Variant]" → "Annual 1". */
+export function issueNumberOf(descriptor: string): string {
+  return descriptor.replace(/\s*\[.*$/, "").trim() || descriptor.trim() || "?";
 }
 
 async function ensurePublisher(api: GcdApi, gcdPublisherId: number | null | undefined) {
@@ -65,10 +65,14 @@ export async function syncGcdSeries(api: GcdApi, gcdId: number, progress?: Progr
   const ids: number[] = s.active_issue_ids ?? s.active_issues ?? [];
   const descriptors: string[] = s.issue_descriptors ?? [];
   const issueIds: number[] = [];
+  const seen = new Set<string>();
   for (const [i, gcdIssueId] of ids.entries()) {
-    const descriptor = descriptors[i] ?? "?";
-    if (isVariantDescriptor(descriptor)) continue;
-    await upsertIssue({ gcd_id: gcdIssueId }, series.id!, { number: descriptor.trim() || "?" });
+    // GCD lists printings and variant covers as their own issues ("1 [1st Printing]", "1 [2nd Printing]",
+    // "1 [Retailer Incentive Cover]"), base issue first; the catalog keeps the first one per number.
+    const number = issueNumberOf(descriptors[i] ?? "");
+    if (seen.has(number)) continue;
+    seen.add(number);
+    await upsertIssue({ gcd_id: gcdIssueId }, series.id!, { number });
     issueIds.push(gcdIssueId);
   }
   await db().series.update(series.id!, { issue_count: issueIds.length });
@@ -97,8 +101,9 @@ export async function syncGcdIssue(api: GcdApi, gcdId: number, progress?: Progre
   const genres = [...new Set(stories.flatMap((st) => (st.genre ?? "").split(/;\s*/)).map((x: string) => x.trim()).filter(Boolean))];
   const pages = parseFloat(g.page_count);
   const issue = await upsertIssue({ gcd_id: gcdId }, series.id!, {
-    number: g.number || g.descriptor || "?", title: g.title || (titles.length ? titles.slice(0, 3).join(", ") : null),
-    cover_date: gcdDate(g.key_date), store_date: gcdDate(g.on_sale_date), image_url: g.cover || null,
+    // No image_url: GCD's cover scans can't be shown outside comics.org; covers come from Comic Vine or Metron
+    number: g.number || issueNumberOf(g.descriptor ?? ""), title: g.title || (titles.length ? titles.slice(0, 3).join(", ") : null),
+    cover_date: gcdDate(g.key_date), store_date: gcdDate(g.on_sale_date),
     description: synopsis, page_count: Number.isFinite(pages) && pages > 0 ? Math.round(pages) : null,
     isbn: g.isbn || null, upc: g.barcode || null, genres: genres.length ? genres : null,
     synced_at: nowIso(), deep_synced_at: nowIso(),
@@ -172,4 +177,45 @@ export async function searchGcd(api: GcdApi, name: string, year?: number | null)
     issue_count: (s.active_issue_ids ?? s.active_issues ?? []).length, country: s.country ?? null, language: s.language ?? null,
     publisher_gcd_id: s.publisher_id ?? null,
   }));
+}
+
+/**
+ * Finds a catalog series (added from Comic Vine or Metron) in GCD and links it and its issues,
+ * so opening an issue also brings GCD's stories, synopses and character lists. One request.
+ */
+export async function linkGcdSeries(api: GcdApi, seriesId: Id) {
+  const d = db();
+  const s = await d.series.get(seriesId);
+  if (!s) throw new NotFoundError(`Series ${seriesId} not found`);
+  if (s.gcd_id) return { gcd_id: s.gcd_id, linked: 0 };
+  const publisher = s.publisher_id ? (await d.publishers.get(s.publisher_id))?.name ?? "" : "";
+  const want = bareTitle(s.name);
+  const local = await d.issues.where("series_id").equals(seriesId).toArray();
+  const candidates = (await api.searchSeries(s.name, s.year_began)).filter((g: any) => bareTitle(g.name ?? "") === want);
+  const pubName = async (g: any) => (g.publisher_id != null ? (await d.publishers.where("gcd_id").equals(g.publisher_id).first())?.name ?? "" : "");
+  let pick: any = null, bestScore = -Infinity;
+  for (const c of candidates) {
+    const count = (c.active_issue_ids ?? []).length;
+    const p = await pubName(c);
+    const samePub = publisher && p ? (p.toLowerCase().includes(publisher.toLowerCase()) || publisher.toLowerCase().includes(p.toLowerCase()) ? 20 : -20) : 0;
+    const score = samePub - Math.abs(count - local.length) / Math.max(local.length, 1) * 10 + (c.language === "en" ? 2 : 0);
+    if (score > bestScore) { bestScore = score; pick = c; }
+  }
+  if (!pick) return { found: false };
+  if (await d.series.where("gcd_id").equals(pick.id).first()) return { found: false, reason: "already linked to another series" };
+  await d.series.update(seriesId, { gcd_id: pick.id });
+  const byNumber = new Map(local.map((i) => [i.number.trim(), i]));
+  const seen = new Set<string>();
+  let linked = 0;
+  for (const [idx, gcdIssueId] of (pick.active_issue_ids ?? []).entries()) {
+    const number = issueNumberOf(pick.issue_descriptors?.[idx] ?? "");
+    if (seen.has(number)) continue;
+    seen.add(number);
+    const mine = byNumber.get(number);
+    if (mine && !mine.gcd_id && !(await d.issues.where("gcd_id").equals(gcdIssueId).first())) {
+      await d.issues.update(mine.id!, { gcd_id: gcdIssueId });
+      linked++;
+    }
+  }
+  return { gcd_id: pick.id as number, linked };
 }

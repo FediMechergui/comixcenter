@@ -4,7 +4,7 @@
  * pacing never holds up Metron or local work. A rate-limited job is deferred, not failed.
  */
 import { AuthError, RateLimitError } from "./contracts";
-import { getComicVine, getGcd, getMetron, getCredentials, metronConfigured, NotConfiguredError } from "./clients";
+import { comicvineConfigured, getComicVine, getGcd, getMetron, getCredentials, metronConfigured, NotConfiguredError } from "./clients";
 import { db, nowIso, type Id, type Job } from "./db";
 import * as cvSync from "./sync/comicvine";
 import * as gcdSync from "./sync/gcd";
@@ -130,6 +130,7 @@ const HANDLERS: Record<string, Handler> = {
       const done = new Set((await db().issues.where("gcd_id").anyOf(r.issue_gcd_ids).toArray()).filter((i) => i.deep_synced_at).map((i) => i.gcd_id));
       for (const gid of r.issue_gcd_ids) if (!done.has(gid)) await ctx.enqueue("gcd.issue", { gcd_id: gid }, P_DETAIL);
     }
+    if (comicvineConfigured(await getCredentials())) await ctx.enqueue("comicvine.series_covers", { series_id: r.series_id }, P_USER);
     await ctx.enqueue("library.rematch", {}, P_DERIVE);
     const { issue_gcd_ids: _drop, ...rest } = r; void _drop;
     return rest;
@@ -165,6 +166,23 @@ const HANDLERS: Record<string, Handler> = {
     await ctx.enqueue("teams.derive", { team_id: Number(p.team_id) }, P_DERIVE);
     return r;
   },
+  "comicvine.series": async (ctx, p) => {
+    const r = await cvSync.syncCvSeries(await getComicVine(), Number(p.cv_id), ctx.progress);
+    await ctx.enqueue("gcd.link_series", { series_id: r.series_id }, P_ENRICH);
+    await ctx.enqueue("library.rematch", {}, P_DERIVE);
+    return r;
+  },
+  "comicvine.issue_full": async (ctx, p) => {
+    const r = await cvSync.syncCvIssue(await getComicVine(), Number(p.issue_id));
+    if ("issue_id" in r) {
+      for (const t of await db().teamAppearances.where("issue_id").equals(r.issue_id as Id).toArray()) {
+        await ctx.enqueue("teams.derive", { team_id: t.team_id }, P_DERIVE);
+      }
+    }
+    return r;
+  },
+  "gcd.link_series": async (_ctx, p) => gcdSync.linkGcdSeries(await getGcd(), Number(p.series_id)),
+  "comicvine.series_covers": async (_ctx, p) => cvSync.syncSeriesCovers(await getComicVine(), Number(p.series_id)),
   "comicvine.arc": async (_ctx, p) => cvSync.enrichArc(await getComicVine(), Number(p.arc_id)),
   "comicvine.issue": async (_ctx, p) => cvSync.enrichIssue(await getComicVine(), Number(p.issue_id)),
   "teams.derive": async (_ctx, p) => deriveMemberships(Number(p.team_id)),

@@ -24,8 +24,36 @@ export interface Credentials {
 
 const CRED_KEY = "credentials";
 
-export async function getCredentials(): Promise<Credentials> {
+/** Accounts built into this copy of the app (web/.env.local at build time); Settings override them. */
+export const BUILT_IN_CREDENTIALS: Credentials = {
+  gcd_username: process.env.NEXT_PUBLIC_GCD_USERNAME || null,
+  gcd_password: process.env.NEXT_PUBLIC_GCD_PASSWORD || null,
+  comicvine_key: process.env.NEXT_PUBLIC_COMICVINE_KEY || null,
+  metron_token: process.env.NEXT_PUBLIC_METRON_TOKEN || null,
+  metron_username: process.env.NEXT_PUBLIC_METRON_USERNAME || null,
+  metron_password: process.env.NEXT_PUBLIC_METRON_PASSWORD || null,
+};
+
+let builtIn: Credentials = BUILT_IN_CREDENTIALS;
+/** Tests run without the built-in accounts. */
+export function setBuiltInCredentials(c: Credentials) { builtIn = c; reset(); }
+
+/** Only what was entered in Settings on this phone. */
+export async function getSavedCredentials(): Promise<Credentials> {
   return ((await db().settings.get(CRED_KEY))?.value as Credentials) ?? {};
+}
+
+/** Settings first, then the built-in accounts. */
+export async function getCredentials(): Promise<Credentials> {
+  const saved = await getSavedCredentials();
+  const merged: Credentials = { ...saved };
+  // A saved Metron token or username replaces the whole built-in Metron sign-in, and likewise for GCD
+  const groups: (keyof Credentials)[][] = [["gcd_username", "gcd_password"], ["comicvine_key"], ["metron_token", "metron_username", "metron_password"]];
+  for (const keys of groups) {
+    if (keys.some((k) => saved[k])) continue;
+    for (const k of keys) if (builtIn[k]) merged[k] = builtIn[k];
+  }
+  return merged;
 }
 
 export async function saveCredentials(creds: Credentials): Promise<void> {

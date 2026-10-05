@@ -8,7 +8,8 @@ import { api, dataMode, qs, refresh, useApi } from "@/lib/api";
 
 interface GcdHit { gcd_id: number; name: string; year_began: number | null; year_end: number | null; issue_count: number; country: string | null; language: string | null; in_catalog: boolean; local_id: number | null }
 interface MetronHit { metron_id: number; name: string; year_began?: number; issue_count?: number; publisher?: string | null; series_type?: string | null }
-interface OnlineResults { gcd: GcdHit[]; metron: Record<string, MetronHit[]>; errors: string[] }
+interface CvHit { cv_id: number; name: string; year_began: number | null; issue_count: number; publisher: string | null; image_url: string | null; in_catalog: boolean; local_id: number | null }
+interface OnlineResults { comicvine: CvHit[]; gcd: GcdHit[]; gcd_searched: boolean; metron: Record<string, MetronHit[]>; errors: string[] }
 
 const KIND_LABEL: Record<string, string> = { series: "Series", arc: "Arcs & events", character: "Characters", team: "Teams", reading_list: "Reading lists" };
 const PATH: Record<string, string> = { series: "/series", arc: "/arc", character: "/character", team: "/team", order: "/order" };
@@ -21,11 +22,13 @@ export function OnlineResults({ q, year }: { q: string; year?: number | null }) 
   const router = useRouter();
   const { run } = useAction();
   const [adding, setAdding] = useState<string | null>(null);
+  const [withGcd, setWithGcd] = useState(false);
   const kinds = "series,arc,character,team,reading_list";
-  const { data, error, isLoading } = useApi<OnlineResults>(q && dataMode() === "device" ? `/api/online/search${qs({ q, year, kinds })}` : null);
+  const { data, error, isLoading } = useApi<OnlineResults>(q && dataMode() === "device" ? `/api/online/search${qs({ q, year, kinds, gcd: withGcd ? 1 : null })}` : null,
+    { keepPreviousData: true });
   if (dataMode() !== "device" || !q) return null;
 
-  const add = (source: "gcd" | "metron", kind: string, id: number, label: string) => {
+  const add = (source: "comicvine" | "gcd" | "metron", kind: string, id: number, label: string) => {
     const key = `${source}-${kind}-${id}`;
     setAdding(key);
     run(() => api.post<{ local: { kind: string; id: number } | null }>("/api/online/add", { source, kind, id }), `Added ${label}`)
@@ -43,6 +46,32 @@ export function OnlineResults({ q, year }: { q: string; year?: number | null }) 
       {data?.errors.map((e) => <p key={e} className="small" role="alert" style={{ color: "var(--danger)", margin: 0 }}>{e}</p>)}
       {data && (
         <div className="stack">
+          {data.comicvine.length > 0 && (
+            <>
+              <span className="eyebrow">Series · Comic Vine</span>
+              <div className="list">
+                {data.comicvine.map((s) => {
+                  const key = `comicvine-series-${s.cv_id}`;
+                  return (
+                    <div key={key} className="list-row" style={{ gridTemplateColumns: "44px 1fr auto" }}>
+                      {s.image_url
+                        ? <img src={s.image_url} alt="" width={44} height={66} loading="lazy" style={{ objectFit: "cover", borderRadius: 3, background: "var(--paper-sunk)" }} />
+                        : <span aria-hidden="true" style={{ width: 44, height: 66, borderRadius: 3, background: "var(--paper-sunk)" }} />}
+                      <span className="body"><strong>{s.name}</strong>
+                        <span className="mono">{[s.publisher, s.year_began, s.issue_count ? plural(s.issue_count, "issue") : null].filter(Boolean).join(" · ")}</span></span>
+                      <button className={`btn small ${s.in_catalog ? "secondary" : ""}`} disabled={adding !== null}
+                        onClick={() => s.local_id ? router.push(`/series?id=${s.local_id}`) : add("comicvine", "series", s.cv_id, s.name)}>
+                        {adding === key ? "Adding…" : s.in_catalog ? <>Open</> : <><I.Plus />Add</>}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              {!data.gcd_searched && (
+                <div><button type="button" className="btn small secondary" onClick={() => setWithGcd(true)}>Search the Grand Comics Database too</button></div>
+              )}
+            </>
+          )}
           {data.gcd.length > 0 && (
             <>
               <span className="eyebrow">Series · Grand Comics Database (every publisher)</span>
@@ -83,7 +112,7 @@ export function OnlineResults({ q, year }: { q: string; year?: number | null }) 
               </div>
             </div>
           ))}
-          {data.gcd.length === 0 && !data.errors.length && !Object.values(data.metron).some((r) => r.length) && <p className="muted">Nothing online called &ldquo;{q}&rdquo;.</p>}
+          {data.comicvine.length === 0 && data.gcd.length === 0 && !data.errors.length && !Object.values(data.metron).some((r) => r.length) && <p className="muted">Nothing online called &ldquo;{q}&rdquo;.</p>}
           {!Object.keys(data.metron).length && (
             <p className="small muted" style={{ margin: 0 }}>
               Story arcs, characters and teams come from Metron. <Link href="/settings" style={{ color: "var(--cyan-ink)", fontWeight: 700 }}>Add your Metron account</Link> to search them.

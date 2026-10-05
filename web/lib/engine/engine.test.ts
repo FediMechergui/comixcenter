@@ -186,28 +186,74 @@ describe("browse, search, arcs, orders", () => {
   });
 });
 
+describe("Comic Vine first (fast relevance search, covers)", () => {
+  it("finds a series, adds it with covers, links GCD, and an opened issue brings credits, characters, teams and arcs", async () => {
+    const found = await get("/api/online/search?q=saga");
+    expect(found.comicvine[0]).toMatchObject({ cv_id: 46568, name: "Saga", year_began: 2012, publisher: "Image", in_catalog: false });
+    expect(found.comicvine[0].image_url).toContain("scale_small");
+    expect(found.gcd_searched).toBe(false);            // GCD's slow alphabetical search isn't needed
+    const added = await post("/api/online/add", { source: "comicvine", kind: "series", id: 46568 });
+    let series = await get(`/api/series/${added.local.id}`);
+    expect(series).toMatchObject({ name: "Saga", publisher: "Image", cv_id: 46568 });
+    expect(series.issues.map((i: any) => [i.number, i.image_url?.endsWith(`saga${i.number}.jpg`)])).toEqual([["1", true], ["2", true]]);
+    await runPending();                                 // links the GCD record in the background
+    series = await get(`/api/series/${added.local.id}`);
+    expect(series.gcd_id).toBe(66221);
+    await get(`/api/issues/${series.issues[0].id}`);    // opening fetches Comic Vine and GCD details
+    await runPending();
+    const issue = await get(`/api/issues/${series.issues[0].id}`);
+    expect(issue.deep_synced).toBe(true);
+    expect(issue.title).toBe("Chapter One");
+    expect(issue.image_url).toContain("comicvine.gamespot.com");
+    const roles = Object.fromEntries(issue.credits.map((c: any) => [c.role, c.creators.map((x: any) => x.name)]));
+    expect(roles.Writer).toContain("Brian K. Vaughan");
+    expect(roles["Cover Artist"]).toContain("Fiona Staples");
+    const names = issue.characters.map((c: any) => c.name);
+    expect(names.filter((n: string) => n === "Hazel")).toHaveLength(1);   // same character from both sources, once
+    expect(issue.events.some((e: any) => e.kind === "first_appearance" && e.name === "Hazel")).toBe(true);
+    expect(issue.teams.map((tm: any) => tm.name)).toContain("Landfall Coalition");
+    expect(issue.arcs.map((a: any) => a.name)).toContain("Saga: Chapter One");
+    expect((await get("/api/online/search?q=saga")).comicvine[0].in_catalog).toBe(true);
+  });
+
+  it("falls back to GCD when Comic Vine has nothing, and searches GCD on request", async () => {
+    const none = await get(`/api/online/search?q=${encodeURIComponent("Astérix")}`);
+    expect(none.comicvine).toEqual([]);
+    expect(none.gcd_searched).toBe(true);
+    expect(none.gcd[0]).toMatchObject({ gcd_id: 7777, name: "Astérix" });
+    const both = await get("/api/online/search?q=saga&gcd=1");
+    expect(both.comicvine.length).toBeGreaterThan(0);
+    expect(both.gcd[0]).toMatchObject({ gcd_id: 66221 });
+  });
+});
+
 describe("Grand Comics Database (keyless, every publisher)", () => {
   it("finds online and adds a series, then fills issue details in the background", async () => {
-    const found = await get("/api/online/search?q=saga");
+    const found = await get("/api/online/search?q=saga&gcd=1");
     expect(found.gcd[0]).toMatchObject({ gcd_id: 66221, name: "Saga", issue_count: 3, in_catalog: false });
     const added = await post("/api/online/add", { source: "gcd", kind: "series", id: 66221 });
     expect(added.local.kind).toBe("series");
-    const series = await get(`/api/series/${added.local.id}`);
-    expect(series.issues.map((i: any) => i.number)).toEqual(["1", "2"]);          // variant skipped
-    expect(series.details_pending).toBe(0);           // GCD details are fetched when an issue is opened
+    let series = await get(`/api/series/${added.local.id}`);
+    expect(series.issues.map((i: any) => i.number)).toEqual(["1", "2"]);          // printings and variants fold into their issue
     expect(series.publisher).toBe("Image");
+    expect(series.details_pending).toBe(1);           // covers for the whole series, from Comic Vine
+    await runPending();
+    series = await get(`/api/series/${added.local.id}`);
+    expect(series.cv_id).toBe(46568);                 // Image's 2012 Saga, not Cross Cult's or Vinland Saga
+    expect(series.issues.map((i: any) => i.image_url)).toEqual([1, 2].map((n) => `https://comicvine.gamespot.com/a/uploads/scale_medium/saga${n}.jpg`));
+    expect(series.details_pending).toBe(0);           // GCD details are fetched when an issue is opened
     await get(`/api/issues/${series.issues[0].id}`);   // opening queues the detail fetch
     expect((await get(`/api/series/${series.id}`)).details_pending).toBe(1);
     await runPending();
     const issue = await get(`/api/issues/${series.issues[0].id}`);
-    expect(issue.image_url).toContain("files1.comics.org");
+    expect(issue.image_url).toContain("comicvine.gamespot.com");   // GCD's own scans can't be shown in apps
     expect(issue.cover_date).toBe("2012-03-01");
     expect(issue.description).toContain("warring worlds");
     expect(issue.credits.find((c: any) => c.role === "Writer").creators[0].name).toBe("Brian K. Vaughan");
     expect(issue.characters.map((c: any) => c.name)).toEqual(expect.arrayContaining(["Alana", "Marko", "Hazel"]));
     expect(issue.events.some((e: any) => e.kind === "first_appearance" && e.name === "Hazel")).toBe(true);
     expect((await get(`/api/series/${series.id}`)).details_pending).toBe(0);
-    expect((await get("/api/online/search?q=saga")).gcd[0].in_catalog).toBe(true);
+    expect((await get("/api/online/search?q=saga&gcd=1")).gcd[0].in_catalog).toBe(true);
   });
 
   it("covers publishers beyond Marvel and DC", async () => {

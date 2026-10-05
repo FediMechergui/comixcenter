@@ -326,8 +326,22 @@ export function createComicVineClient(opts: ComicVineClientOptions) {
     return out;
   }
 
+  /** Every issue of a volume with its cover, oldest first, 100 per request. */
+  async function volumeIssues(volumeId: number): Promise<CvBasicIssue[]> {
+    const out: CvBasicIssue[] = [];
+    for (let offset = 0; offset < 2000; offset += 100) {
+      const body = await request("/issues/", { filter: `volume:${volumeId}`, field_list: "id,issue_number,name,image,cover_date,store_date,volume",
+                                               sort: "cover_date:asc", limit: 100, offset });
+      const results = arr(body.results);
+      out.push(...results.map(mapBasicIssue));
+      if (!results.length || out.length >= int(body.number_of_total_results)) break;
+    }
+    return out;
+  }
+
   return {
     pacer,
+    volumeIssues,
     getCharacter: (id: number) => get("character", id, mapCharacter),
     getIssue: (id: number) => get("issue", id, mapIssue),
     getTeam: (id: number) => get("team", id, mapTeam),

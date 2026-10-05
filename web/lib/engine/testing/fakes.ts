@@ -123,6 +123,14 @@ export class FakeComicVine implements ComicVineApi {
   }
   async getIssue(id: number) {
     this.calls.push(`issue:${id}`);
+    if (id === 300001) {
+      return { id, name: "Chapter One", number: "1", cover_date: "2012-03-01", description: "<p>Alana and Marko flee with their newborn daughter.</p>",
+        image: { medium_url: "https://comicvine.gamespot.com/a/uploads/scale_medium/saga1.jpg" }, volume: { id: 46568, name: "Saga" },
+        creators: [{ id: 1, name: "Brian K. Vaughan", roles: "writer" }, { id: 2, name: "Fiona Staples", roles: "artist, cover" }],
+        characters: [{ id: 5001, name: "Hazel" }, { id: 5002, name: "Alana" }, { id: 5003, name: "Marko" }],
+        teams: [{ id: 6001, name: "Landfall Coalition" }], story_arcs: [{ id: 7001, name: "Saga: Chapter One" }],
+        first_appearance_characters: [{ id: 5001, name: "Hazel" }], first_appearance_teams: [], deaths: [] };
+    }
     const vols: Record<number, [string, string, string | null]> = { 6686: ["Amazing Fantasy", "15", "1962-08-01"], 7000: ["Amazing Spider-Man", "300", "1988-05-01"] };
     const [vol, number, cover] = vols[id] ?? ["Some Series", "1", null];
     return { volume: { id: 1, name: vol }, number, cover_date: cover, first_appearance_characters: id === 7000 ? [cvRef(40809)] : [],
@@ -134,6 +142,26 @@ export class FakeComicVine implements ComicVineApi {
     return { summary: "A team.", description: null, image: null, first_issue: null, issues_disbanded_in: [], members: members[id] ?? [] };
   }
   async getStoryArc() { return { description: "<b>Arc</b> text", summary: null, image: null }; }
+  async getVolume(id: number) {
+    this.calls.push(`volume:${id}`);
+    if (id !== 46568) throw new Error(`no volume ${id}`);
+    return { id, name: "Saga", start_year: 2012, publisher: { id: 513, name: "Image" }, issue_count: 72,
+      description: "<p>An epic space opera.</p>", image: { medium_url: "https://comicvine.gamespot.com/a/uploads/scale_medium/saga1.jpg" } };
+  }
+  async searchVolumes(query: string) {
+    this.calls.push(`search_volumes:${query}`);
+    return [
+      { id: 44141, name: "Vinland Saga", start_year: 2006, publisher: { name: "Kodansha" }, issue_count: 29 },
+      { id: 110032, name: "Saga", start_year: 2013, publisher: { name: "Cross Cult" }, issue_count: 12 },
+      { id: 46568, name: "Saga", start_year: 2012, publisher: { name: "Image" }, issue_count: 72, image: { small_url: "https://comicvine.gamespot.com/a/uploads/scale_small/saga1.jpg" } },
+    ].filter((v) => v.name.toLowerCase().includes(query.toLowerCase()));
+  }
+  async volumeIssues(volumeId: number) {
+    this.calls.push(`volume_issues:${volumeId}`);
+    if (volumeId !== 46568) return [];
+    const cover = (n: number) => ({ medium_url: `https://comicvine.gamespot.com/a/uploads/scale_medium/saga${n}.jpg` });
+    return [{ id: 300001, number: "1", cover_date: "2012-03-01", image: cover(1) }, { id: 300002, number: "2", cover_date: "2012-04-01", image: cover(2) }];
+  }
 }
 
 /** GCD fake with real-API shapes (ids parsed from api_url as the client does). */
@@ -143,7 +171,7 @@ export class FakeGcd implements GcdApi {
     2547: { id: 2547, name: "Glénat", country: "fr", year_began: 1969 } };
   seriesDb: Record<number, any> = {
     66221: { id: 66221, name: "Saga", year_began: 2012, year_ended: null, publisher_id: 3, publishing_format: "ongoing series", notes: "",
-      country: "us", language: "en", active_issue_ids: [900001, 900002, 900003], issue_descriptors: ["1", "1 [Variant Cover]", "2"] },
+      country: "us", language: "en", active_issue_ids: [900001, 900002, 900003], issue_descriptors: ["1 [1st Printing]", "1 [Variant Cover]", "2"] },
     7777: { id: 7777, name: "Astérix", year_began: 1961, year_ended: null, publisher_id: 2547, publishing_format: "album", notes: "",
       country: "fr", language: "fr", active_issue_ids: [700001], issue_descriptors: ["1"] },
   };
