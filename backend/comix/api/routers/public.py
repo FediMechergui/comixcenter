@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from comix.api.deps import DB, found
-from comix.models import Arc, ArcIssue, Credit, Creator, Issue, ReadingOrder, Series
+from comix.models import Arc, ArcIssue, Credit, Creator, Issue, ReadingOrder, Series, Universe
 from comix.services import catalog, characters, orders, search as search_service
 from comix.services.catalog import issue_cards
 
@@ -24,6 +24,11 @@ def publishers(db: Session = DB):
 @router.get("/publishers/{publisher_id}", tags=["catalog"])
 def publisher(publisher_id: int, db: Session = DB):
     return found(catalog.publisher_detail(db, publisher_id), "Publisher not found")
+
+
+@router.get("/universes", tags=["catalog"])
+def universes(db: Session = DB):
+    return [catalog.universe_card(db, u) for u in db.scalars(select(Universe).order_by(Universe.sort_order, Universe.name))]
 
 
 @router.get("/universes/{universe_id}", tags=["catalog"])

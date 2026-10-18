@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { apiUrl } from "@/lib/api";
 import * as I from "@/components/icons";
 import { formatDate, plural, ProgressBar, TierChip } from "@/components/ui";
 import type { ArcSummary, CharacterCard, IssueCard, OrderCard, SeriesCard, TeamCard, Tier } from "@/lib/types";
@@ -11,7 +12,7 @@ export function Cover({ src, alt, fallback, children }: { src: string | null | u
   return (
     <div className="cover">
       {src && !failed
-        ? <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />
+        ? <img key={src} src={apiUrl(src)} alt={alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
         : <div className="placeholder" aria-hidden>{fallback}</div>}
       {children}
     </div>
@@ -23,7 +24,8 @@ export function Thumb({ src, round }: { src: string | null | undefined; round?: 
   const [failed, setFailed] = useState(false);
   return (
     <span className={`thumb${round ? " round" : ""}`} aria-hidden>
-      {src && !failed ? <img src={src} alt="" loading="lazy" onError={() => setFailed(true)} /> : <span className="thumb-blank" />}
+      {/* No referrer: the app's origin is http://localhost, which hotlink protection (GetComics) answers 403 to. */}
+      {src && !failed ? <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} /> : <span className="thumb-blank" />}
     </span>
   );
 }
@@ -68,6 +70,20 @@ export function SeriesRow({ s }: { s: SeriesCard }) {
         <span className="mono">{[years, s.series_type, s.publisher].filter(Boolean).join(" · ")}</span>
       </span>
       <span className="mono">{s.issue_count ? plural(s.issue_count, "issue") : ""}</span>
+    </Link>
+  );
+}
+
+/** The same series as a cover-led tile, for the grid view of a catalogue listing. */
+export function SeriesTile({ s }: { s: SeriesCard }) {
+  const years = s.year_began ? `${s.year_began}${s.year_end && s.year_end !== s.year_began ? `–${s.year_end}` : s.year_end ? "" : "–"}` : "";
+  return (
+    <Link href={`/series?id=${s.id}`} className="issue-tile card-link">
+      <Cover src={s.image_url} alt="" fallback={s.name} />
+      <span className="meta">
+        <strong>{s.name}{s.volume && s.volume > 1 ? ` Vol. ${s.volume}` : ""}</strong>
+        <span className="mono">{[years, s.publisher].filter(Boolean).join(" · ")}</span>
+      </span>
     </Link>
   );
 }

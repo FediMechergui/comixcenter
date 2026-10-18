@@ -10,6 +10,9 @@ from tests.comix_app.fakes import FakeComicvine, FakeMetron
 def database(tmp_path, monkeypatch):
     """Fresh SQLite file with the schema and seeded taxonomy; the global session factory points at it."""
     monkeypatch.setenv("COMIX_DATA_DIR", str(tmp_path / "data"))
+    # Tests never use the developer's real accounts from backend/.env
+    for name in ("METRON_API_TOKEN", "METRON_USERNAME", "METRON_PASSWORD", "COMICVINE_API_KEY"):
+        monkeypatch.setenv(name, "")
     from comix import config
     config.get_settings.cache_clear()
     engine = db.configure(f"sqlite:///{(tmp_path / 'test.db').as_posix()}")

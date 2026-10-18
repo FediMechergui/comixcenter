@@ -73,11 +73,47 @@ export function createMemoryStore(): FileStore {
 
 let store: FileStore | null = null;
 
+/** OPFS persists browser device-mode comics independently of the IndexedDB catalog. */
+export function createBrowserStore(): FileStore {
+  const urls = new Map<string, string>();
+  async function parent(path: string, create = false) {
+    const parts = path.split("/");
+    if (parts.some((p) => !p || p === "." || p === "..")) throw new Error("Invalid storage path");
+    if (!navigator.storage?.getDirectory) throw new Error("This browser cannot store comics on this device. Use server mode or the Android app.");
+    let dir = await navigator.storage.getDirectory();
+    for (const part of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(part, { create });
+    return { dir, name: parts[parts.length - 1] };
+  }
+  function revoke(path: string) { const url = urls.get(path); if (url) { URL.revokeObjectURL(url); urls.delete(path); } }
+  return {
+    async write(path, data) {
+      const { dir, name } = await parent(path, true);
+      const handle = await dir.getFileHandle(name, { create: true });
+      const writable = await handle.createWritable();
+      try { await writable.write(data as Uint8Array<ArrayBuffer>); await writable.close(); }
+      catch (e) { await writable.abort().catch(() => {}); throw e; }
+      revoke(path);
+    },
+    async read(path) { const { dir, name } = await parent(path); return new Uint8Array(await (await (await dir.getFileHandle(name)).getFile()).arrayBuffer()); },
+    async url(path) {
+      const hit = urls.get(path); if (hit) return hit;
+      const { dir, name } = await parent(path);
+      const url = URL.createObjectURL(await (await dir.getFileHandle(name)).getFile());
+      urls.set(path, url); return url;
+    },
+    async removeDir(path) {
+      const { dir, name } = await parent(path);
+      try { await dir.removeEntry(name, { recursive: true }); } catch (e) { if ((e as DOMException).name !== "NotFoundError") throw e; }
+      for (const key of urls.keys()) if (key.startsWith(`${path}/`)) revoke(key);
+    },
+  };
+}
+
 export function fileStore(): FileStore {
   if (!store) {
     const native = typeof window !== "undefined" &&
       (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
-    store = native ? createNativeStore() : createMemoryStore();
+    store = native ? createNativeStore() : createBrowserStore();
   }
   return store;
 }

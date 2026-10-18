@@ -1,8 +1,31 @@
 # ComixCenter
 
 Reading orders, story arcs, characters and teams across comics universes, plus a reader for the
-comics you own. Catalog data comes from [Metron](https://metron.cloud) and
-[Comic Vine](https://comicvine.gamespot.com/api/); comics you don't own link to legal services.
+comics you import and supported online sources. Catalog data comes from Metron, Comic Vine and
+the Grand Comics Database. Batcave is the primary online discovery and reading source.
+
+The app includes 12 editorial reading guides with 66 reading stops: Marvel and DC mainlines,
+both Ultimate continuities, Absolute DC, Batman, Superman, Krakoa, Invincible, Hellboy,
+Energon and standalone stories. These guides work before any metadata sync. They are focused
+starting paths, not an exhaustive issue-by-issue catalog of every universe.
+
+Discover offers universe shortcuts, reading paths, recent reading sessions and Batcave search.
+The online reader has page/scroll modes, chapter selection, keyboard controls, fullscreen,
+next-issue navigation and device-local reading position. Character pages include optional
+story milestones with spoiler controls.
+
+## Batcave connection
+
+Run `start-server.bat` on a computer with Chrome or Edge installed. Open the server address
+in a browser to use the full web app. Batcave's protected requests run through a dedicated
+normal browser profile; metadata and covers are cached. Comics stay inside ComixCenter's
+reader. If Batcave asks for a human verification, complete it in the source browser window
+and retry. The app does not copy browser cookies into an unrelated HTTP client.
+
+In the Android app, Settings > Batcave browser connection accepts the computer's LAN address
+while keeping the catalog on the phone. Native source requests are attempted first; protected
+requests use that computer's browser session. The computer must remain running for those
+requests. Existing GetComics OPDS and device RCO support remain available.
 
 ```
 backend/comix/     FastAPI app, SQLite (+ FTS5 search), Metron/Comic Vine sync workers, library + reader API
@@ -10,7 +33,7 @@ backend/migrations Alembic migrations
 backend/tests/     pytest suite (offline; Metron and Comic Vine are faked)
 web/               Next.js app (static export): PWA in the browser, Android app via Capacitor
 scripts/           icon generator and old source probes
-backend/app/       legacy scraper code from the first prototype (not used by the app)
+backend/app/       source providers and Chrome session transport, also used by the feeds API
 ```
 
 ## Run it
@@ -53,12 +76,21 @@ npm run build && npx cap sync android
 cd android && gradlew assembleDebug    # app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The app talks to your ComixCenter server. On the emulator the default address `http://10.0.2.2:8000`
-reaches your computer; on a phone, set your computer's network address in Settings and start the
-server with `python -m comix serve --host 0.0.0.0`.
+Android defaults to its own IndexedDB catalog and native file storage, seeded from the bundled
+catalog snapshot. Browser mode defaults to the FastAPI server catalog. They are separate catalogs.
+On the emulator, `http://10.0.2.2:8000` reaches your computer. On a phone, set the computer's
+LAN address in Settings and start it with `start-server.bat`.
+
+API accounts belong in the device's Settings or `backend/.env`. Distributed application builds
+no longer embed `NEXT_PUBLIC_*` account credentials. The snapshot builder can still read the
+local credential file, but exports catalog tables only. When `ADMIN_TOKEN` is configured,
+library uploads, scans, edits, deletion and OPDS changes also require that token.
 
 ## Tests
 
 ```bash
 cd backend && python -m pytest
+cd web && npm test
+cd web && npm run typecheck
+cd web && npm run build
 ```

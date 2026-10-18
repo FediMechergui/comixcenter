@@ -195,7 +195,7 @@ class ChromeBrowser:
         while time.monotonic() < deadline:
             current = await self.current_url()
             state = await self.evaluate("document.readyState")
-            if current == url and state == "complete":
+            if current == url and state in ("interactive", "complete"):
                 return
             await asyncio.sleep(0.5)
         # It might have redirected, just check if we are on the right domain
@@ -210,7 +210,7 @@ class ChromeBrowser:
         while time.monotonic() < deadline:
             current = await self.current_url()
             state = await self.evaluate("document.readyState")
-            if current.startswith(origin) and state == "complete":
+            if current.startswith(origin) and state in ("interactive", "complete"):
                 title = await self.evaluate("document.title")
                 if title and "Just a moment" not in title:
                     return
@@ -236,4 +236,9 @@ class ChromeBrowser:
             self._page = None
         if self._process is not None and self._process.poll() is None:
             self._process.terminate()
+            try:
+                await asyncio.to_thread(self._process.wait, timeout=5)
+            except subprocess.TimeoutExpired:
+                self._process.kill()
+                await asyncio.to_thread(self._process.wait, timeout=5)
             self._process = None

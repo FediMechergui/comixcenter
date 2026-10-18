@@ -83,6 +83,8 @@ export default function SettingsPage() {
           </Section>
         )}
 
+        {mode === "device" && <Section title="Batcave browser connection"><form className="stack" onSubmit={(e) => { e.preventDefault(); setServerUrl(server); toast("Batcave connection saved"); }}><p className="small muted">Batcave may require a normal browser session. Run ComixCenter on your computer and enter its address here. Your catalog stays on this device; protected reading requests use the computer’s browser.</p><label className="label">Computer address<input className="input" type="url" required value={server} onChange={(e) => setServer(e.target.value)} placeholder="http://192.168.1.20:8000" /></label><div><button className="btn secondary">Save connection</button></div></form></Section>}
+
         <Section title="Appearance">
           <Segmented label="Theme" value={theme} onChange={(t) => {
             setTheme(t); applyTheme(t);
@@ -108,7 +110,7 @@ export default function SettingsPage() {
             Catalog data from the <a href="https://www.comics.org" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan-ink)" }}>Grand Comics Database</a> (CC BY-SA 4.0),{" "}
             <a href="https://metron.cloud" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan-ink)" }}>Metron</a> and{" "}
             <a href="https://comicvine.gamespot.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan-ink)" }}>Comic Vine</a>.
-            ComixCenter reads comics you own; for everything else it points you to legal services.
+            Read imported comics offline, or browse and read supported online sources inside ComixCenter.
           </p>
           {appVersion && <p className="mono" style={{ margin: 0 }}>App version {appVersion}</p>}
         </Section>

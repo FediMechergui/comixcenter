@@ -12,7 +12,8 @@
 
 export interface HttpRequest {
   url: string;
-  method?: "GET" | "POST";
+  /** HEAD is used to read a download's size before committing to it. */
+  method?: "GET" | "POST" | "HEAD";
   headers?: Record<string, string>;
   /** Query parameters; undefined values are dropped */
   params?: Record<string, string | number | boolean | undefined>;

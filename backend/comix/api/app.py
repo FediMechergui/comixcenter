@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from comix import __version__
-from comix.api.routers import admin, library, public
+from comix.api.routers import admin, library, public, feeds, online
 from comix.bootstrap import bootstrap
 from comix.config import BACKEND_DIR, get_settings
 from comix.db import get_db, session_scope, upgrade_database
@@ -39,6 +39,7 @@ def create_app(run_migrations: bool = True, start_worker: bool = None) -> FastAP
         yield
         if start_worker:
             await worker.stop()
+        await online.online_reader.close()
 
     app = FastAPI(title="ComixCenter", version=__version__, lifespan=lifespan,
                   description="Comic catalog, reading orders, characters and teams, and your own library.")
@@ -51,6 +52,8 @@ def create_app(run_migrations: bool = True, start_worker: bool = None) -> FastAP
     app.include_router(library.router)
     app.include_router(library.opds_router)
     app.include_router(admin.router)
+    app.include_router(feeds.router)
+    app.include_router(online.router)
 
     @app.get("/api/status", tags=["system"])
     def status(request: Request, db: Session = Depends(get_db)):

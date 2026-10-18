@@ -29,6 +29,7 @@ export const Wrench = (p: P) => <svg {...base} {...p}><path d="M14.7 6.3a4 4 0 0
 export const Check = (p: P) => <svg {...base} strokeWidth={3} {...p}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>;
 export const ChevronL = (p: P) => <svg {...base} {...p}><path d="M15 18l-6-6 6-6" /></svg>;
 export const ChevronR = (p: P) => <svg {...base} {...p}><path d="M9 18l6-6-6-6" /></svg>;
+export const Expand = (p: P) => <svg {...base} {...p}><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5" /></svg>;
 export const Up = (p: P) => <svg {...base} {...p}><path d="M18 15l-6-6-6 6" /></svg>;
 export const Down = (p: P) => <svg {...base} {...p}><path d="M6 9l6 6 6-6" /></svg>;
 export const X = (p: P) => <svg {...base} {...p}><path d="M6 6l12 12M18 6L6 18" /></svg>;

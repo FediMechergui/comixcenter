@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: "app.comixcenter",
   appName: "ComixCenter",
   webDir: "out",
+  // Debug logging writes every plugin response into logcat; a comic page is megabytes of base64,
+  // and serialising that for the log costs more than fetching it.
+  loggingBehavior: "production",
   android: {
     // The app talks to your ComixCenter server over plain HTTP on the local network
     allowMixedContent: true,

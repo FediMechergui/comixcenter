@@ -1,12 +1,28 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Pager, SeriesRow } from "@/components/cards";
+import { Pager, SeriesRow, SeriesTile } from "@/components/cards";
 import { useNumberParam, useSetParams, useStringParam, withParams } from "@/components/params";
 import { Empty, ErrorBox, Loading, PageHead, plural, Segmented } from "@/components/ui";
 import { qs, useApi } from "@/lib/api";
 import type { Page, PublisherDetail, SeriesCard, UniverseDetail } from "@/lib/types";
 
+/** Grid or list is a per-reader habit, so it is remembered rather than reset on every visit. */
+const VIEW_KEY = "comix.seriesView";
+type View = "list" | "grid";
+
+function useView(): [View, (v: View) => void] {
+  const [view, setView] = useState<View>("list");
+  useEffect(() => {
+    try { const v = localStorage.getItem(VIEW_KEY); if (v === "grid" || v === "list") setView(v); } catch { /* private mode */ }
+  }, []);
+  return [view, (v) => {
+    setView(v);
+    try { localStorage.setItem(VIEW_KEY, v); } catch { /* private mode: this visit only */ }
+  }];
+}
+
 function SeriesListPage() {
+  const [view, setView] = useView();
   const publisher = useNumberParam("publisher");
   const universe = useNumberParam("universe");
   const era = useNumberParam("era");
@@ -41,6 +57,8 @@ function SeriesListPage() {
         <input id="filter" className="input" style={{ maxWidth: 320 }} placeholder="Filter by name" value={text} onChange={(e) => setText(e.target.value)} />
         <Segmented label="Sort" value={sort} onChange={(v) => setParams({ sort: v === "name" ? null : v, page: null })}
           options={[{ value: "name", label: "A–Z" }, { value: "year", label: "Oldest" }, { value: "recent", label: "Latest" }]} />
+        <Segmented label="View" value={view} onChange={setView}
+          options={[{ value: "list", label: "List" }, { value: "grid", label: "Grid" }]} />
         {data && <span className="mono">{plural(data.total, "series", "series")}</span>}
       </div>
       {error && <ErrorBox error={error} retry={() => mutate()} />}
@@ -48,7 +66,9 @@ function SeriesListPage() {
       {data && data.items.length === 0 && <Empty title="No series here yet">Sync series from Metron in Curate, or widen the filter.</Empty>}
       {data && data.items.length > 0 && (
         <>
-          <div className="list">{data.items.map((s) => <SeriesRow key={s.id} s={s} />)}</div>
+          {view === "grid"
+            ? <div className="grid-covers">{data.items.map((s) => <SeriesTile key={s.id} s={s} />)}</div>
+            : <div className="list">{data.items.map((s) => <SeriesRow key={s.id} s={s} />)}</div>}
           <Pager page={data.page} size={data.size} total={data.total} onPage={(p) => setParams({ page: p })} />
         </>
       )}

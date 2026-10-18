@@ -34,6 +34,8 @@ export interface OpdsEntry {
   /** Navigation target (a sub-feed); null for plain publications */
   href: string | null;
   acquisitions: OpdsAcquisition[];
+  /** A page that reads the book in a browser, for sources that offer one instead of a file. */
+  reader_url?: string | null;
 }
 
 export interface OpdsFeed {

@@ -9,6 +9,9 @@ import { Picker } from "@/components/pickers";
 import { ErrorBox, Facts, formatDate, Loading, PageHead, plural, Section, Segmented, useAction, useCurateMode } from "@/components/ui";
 import { api, qs, useApi } from "@/lib/api";
 import type { Appearance, CharacterDetail, IdentityDetail, OrderCard, Page, UniverseDetail } from "@/lib/types";
+import { GuideShelf } from "@/components/guides";
+import { guidesForCharacter } from "@/lib/guides";
+import { CharacterJourney } from "@/components/character-journey";
 
 const EVENT_LABEL: Record<string, string> = { first_appearance: "First appearance", death: "Death", resurrection: "Return", costume: "Costume era" };
 
@@ -39,6 +42,9 @@ function CharacterPage() {
       </PageHead>
 
       <div className="stack-lg">
+        {c.description && <details className="character-about"><summary>About {c.name}</summary><p className="prose">{c.description}</p></details>}
+        <CharacterJourney character={c} />
+        {guidesForCharacter(c.name).length > 0 && <Section title="Follow the character’s journey"><GuideShelf items={guidesForCharacter(c.name)} /></Section>}
         <div className="grid-cards" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
           {c.identities.map((ident) => <IdentityCard key={ident.id} ident={ident} character={c} curate={curate} onChange={() => mutate()} />)}
         </div>
@@ -103,6 +109,7 @@ function IdentityCard({ ident, character, curate, onChange }: { ident: IdentityD
           {ident.first_appearance.id ? <Link href={`/issue?id=${ident.first_appearance.id}`} style={{ fontWeight: 700 }}>{ident.first_appearance.label}</Link> : ident.first_appearance.label}
         </div>
       )}
+      {ident.events.some((e) => e.kind !== "first_appearance") && <details><summary className="small muted">Later milestones (story spoilers)</summary>
       {ident.events.filter((e) => e.kind !== "first_appearance").map((e) => (
         <div key={e.id} className="small between">
           <span><span className="tier tier-tie_in">{EVENT_LABEL[e.kind] ?? e.kind}</span>{" "}
@@ -114,6 +121,7 @@ function IdentityCard({ ident, character, curate, onChange }: { ident: IdentityD
           )}
         </div>
       ))}
+      </details>}
       {ident.description && <p className="small clamp-3" style={{ margin: 0 }}>{ident.description}</p>}
       {curate && (
         <div className="stack" style={{ gap: 8, borderTop: "1px dashed var(--rule)", paddingTop: 10 }}>

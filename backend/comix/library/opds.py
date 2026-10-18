@@ -96,11 +96,15 @@ def download(url: str, username: Optional[str] = None, password: Optional[str] =
     """Streams an acquisition link to a temp file (caller deletes it)."""
     fd, tmp = tempfile.mkstemp(prefix="comix-opds-")
     size = 0
-    with _client(username, password) as client, client.stream("GET", _check_url(url)) as resp, open(fd, "wb") as out:
-        resp.raise_for_status()
-        for chunk in resp.iter_bytes(1 << 20):
-            size += len(chunk)
-            if size > MAX_DOWNLOAD:
-                raise OpdsError("Download exceeds 2 GB")
-            out.write(chunk)
+    try:
+        with open(fd, "wb") as out, _client(username, password) as client, client.stream("GET", _check_url(url)) as resp:
+            resp.raise_for_status()
+            for chunk in resp.iter_bytes(1 << 20):
+                size += len(chunk)
+                if size > MAX_DOWNLOAD:
+                    raise OpdsError("Download exceeds 2 GB")
+                out.write(chunk)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
     return Path(tmp)

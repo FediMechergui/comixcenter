@@ -2,14 +2,16 @@
 import Link from "next/link";
 import { Empty, ErrorBox, Loading, PageHead, plural, Section } from "@/components/ui";
 import { useApi } from "@/lib/api";
-import type { PublisherCard, Status } from "@/lib/types";
+import type { PublisherCard, Status, UniverseCard } from "@/lib/types";
 
 export default function BrowsePage() {
   const { data, error, mutate } = useApi<PublisherCard[]>("/api/publishers");
   const status = useApi<Status>("/api/status");
+  const universes = useApi<UniverseCard[]>("/api/universes");
   return (
     <>
       <PageHead eyebrow="Catalog" title="Browse" />
+      {universes.data && <Section title="Universes & mainlines"><div className="universe-browser">{universes.data.map((u) => <Link key={u.id} href={`/universe?id=${u.id}`} className="universe-browser-row"><div><span className="eyebrow">{u.publisher || u.kind}</span><strong>{u.name}</strong><p>{u.description}</p></div><span className="mono">{u.series_count} series</span></Link>)}</div></Section>}
       {error && <ErrorBox error={error} retry={() => mutate()} />}
       {!data && !error && <Loading />}
       {data && (

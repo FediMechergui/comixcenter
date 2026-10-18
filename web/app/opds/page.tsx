@@ -1,12 +1,12 @@
 "use client";
-import { Thumb } from "@/components/cards";
+import { FeedEntry } from "@/components/feed";
 import { useState } from "react";
 import * as I from "@/components/icons";
 import { Empty, ErrorBox, Loading, PageHead, Section, useAction } from "@/components/ui";
 import { api, qs, refresh, useApi } from "@/lib/api";
 import type { OpdsFeedPage } from "@/lib/types";
 
-interface Feed { id: number; name: string; url: string; username: string | null; has_password: boolean }
+interface Feed { id: number; name: string; url: string; username: string | null; has_password: boolean; builtin: boolean }
 
 export default function OpdsPage() {
   const feeds = useApi<Feed[]>("/api/opds");
@@ -19,24 +19,39 @@ export default function OpdsPage() {
       <div className="stack-lg">
         {feeds.error && <ErrorBox error={feeds.error} retry={() => feeds.mutate()} />}
         {!open && <AddFeed />}
-        {feeds.data && feeds.data.length === 0 && !open && <Empty title="No servers connected">Add your server&rsquo;s OPDS address, for Komga that&rsquo;s usually <code>/opds/v1.2/catalog</code>.</Empty>}
-        {feeds.data && !open && feeds.data.length > 0 && (
-          <Section title="Connected">
-            <div className="list">
-              {feeds.data.map((f) => (
-                <div key={f.id} className="list-row" style={{ gridTemplateColumns: "1fr auto" }}>
-                  <button className="body" style={{ background: "none", border: 0, textAlign: "left", cursor: "pointer" }} onClick={() => setOpen({ feed: f, url: null })}>
-                    <strong>{f.name}</strong><span className="mono">{f.url}</span>
-                  </button>
-                  <DeleteFeed id={f.id} />
+        {feeds.data && !open && (
+          <>
+            {feeds.data.some((f) => f.builtin) && (
+              <Section title="Built in">
+                <div className="list">
+                  {feeds.data.filter((f) => f.builtin).map((f) => <FeedRow key={f.id} feed={f} onOpen={() => setOpen({ feed: f, url: null })} />)}
                 </div>
-              ))}
-            </div>
-          </Section>
+              </Section>
+            )}
+            <Section title="Connected">
+              {feeds.data.some((f) => !f.builtin)
+                ? <div className="list">
+                    {feeds.data.filter((f) => !f.builtin).map((f) => <FeedRow key={f.id} feed={f} onOpen={() => setOpen({ feed: f, url: null })} />)}
+                  </div>
+                : <Empty title="No servers connected">Add your server&rsquo;s OPDS address, for Komga that&rsquo;s usually <code>/opds/v1.2/catalog</code>.</Empty>}
+            </Section>
+          </>
         )}
         {open && <FeedBrowser feed={open.feed} url={open.url} onNavigate={(url) => setOpen({ ...open, url })} onClose={() => setOpen(null)} />}
       </div>
     </>
+  );
+}
+
+function FeedRow({ feed, onOpen }: { feed: Feed; onOpen: () => void }) {
+  return (
+    <div className="list-row" style={{ gridTemplateColumns: "1fr auto" }}>
+      <button className="body" style={{ background: "none", border: 0, textAlign: "left", cursor: "pointer" }} onClick={onOpen}>
+        <strong>{feed.name}</strong><span className="mono">{feed.url}</span>
+      </button>
+      {/* A built-in feed has no row to delete, so it offers no Remove. */}
+      {!feed.builtin && <DeleteFeed id={feed.id} />}
+    </div>
   );
 }
 
@@ -67,7 +82,6 @@ function AddFeed() {
 
 function FeedBrowser({ feed, url, onNavigate, onClose }: { feed: Feed; url: string | null; onNavigate: (url: string) => void; onClose: () => void }) {
   const { data, error, mutate } = useApi<OpdsFeedPage>(`/api/opds/${feed.id}/browse${qs({ url })}`);
-  const { run, busy } = useAction();
   return (
     <Section title={data?.title || feed.name} action={<button className="btn ghost small" onClick={onClose}>Close</button>}>
       <div className="row">
@@ -78,18 +92,7 @@ function FeedBrowser({ feed, url, onNavigate, onClose }: { feed: Feed; url: stri
       {!data && !error && <Loading />}
       {data && (
         <div className="list">
-          {data.entries.map((e, i) => (
-            <div key={i} className="list-row">
-              <Thumb src={e.cover} />
-              <span className="body"><strong>{e.title}</strong>{e.author && <span className="mono">{e.author}</span>}</span>
-              {e.kind === "navigation" && e.href
-                ? <button className="btn secondary small" onClick={() => onNavigate(e.href!)}>Open<I.ChevronR /></button>
-                : e.acquisitions[0]
-                  ? <button className="btn small" disabled={busy} onClick={() => run(() => api.post<{ created: boolean }>(`/api/opds/${feed.id}/import`, { href: e.acquisitions[0].href, title: e.title }),
-                      (r) => r.created ? `Imported ${e.title}` : `${e.title} is already in your library`).then(() => refresh("/api/library"))}><I.Download />Import</button>
-                  : null}
-            </div>
-          ))}
+          {data.entries.map((e, i) => <FeedEntry key={i} entry={e} feedId={feed.id} onOpen={onNavigate} />)}
         </div>
       )}
       {data?.next && <button className="btn secondary" onClick={() => onNavigate(data.next!)}>More<I.ChevronR /></button>}

@@ -24,18 +24,11 @@ export interface Credentials {
 
 const CRED_KEY = "credentials";
 
-/** Accounts built into this copy of the app (web/.env.local at build time); Settings override them. */
-export const BUILT_IN_CREDENTIALS: Credentials = {
-  gcd_username: process.env.NEXT_PUBLIC_GCD_USERNAME || null,
-  gcd_password: process.env.NEXT_PUBLIC_GCD_PASSWORD || null,
-  comicvine_key: process.env.NEXT_PUBLIC_COMICVINE_KEY || null,
-  metron_token: process.env.NEXT_PUBLIC_METRON_TOKEN || null,
-  metron_username: process.env.NEXT_PUBLIC_METRON_USERNAME || null,
-  metron_password: process.env.NEXT_PUBLIC_METRON_PASSWORD || null,
-};
+/** Distributed builds contain catalog data, never shared account passwords or API keys. */
+export const BUILT_IN_CREDENTIALS: Credentials = {};
 
 let builtIn: Credentials = BUILT_IN_CREDENTIALS;
-/** Tests run without the built-in accounts. */
+/** Explicit injection for tests and local tooling. Never sourced from NEXT_PUBLIC variables. */
 export function setBuiltInCredentials(c: Credentials) { builtIn = c; reset(); }
 
 /** Only what was entered in Settings on this phone. */

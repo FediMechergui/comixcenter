@@ -4,6 +4,8 @@ import { useNumberParam, withParams } from "@/components/params";
 import { ErrorBox, formatDate, Loading, PageHead, plural, Section } from "@/components/ui";
 import { useApi } from "@/lib/api";
 import type { UniverseDetail } from "@/lib/types";
+import { GuideShelf } from "@/components/guides";
+import { guides } from "@/lib/guides";
 
 function UniversePage() {
   const id = useNumberParam("id");
@@ -18,6 +20,7 @@ function UniversePage() {
         {data.description && <p className="prose muted" style={{ margin: 0 }}>{data.description}</p>}
       </PageHead>
       <div className="stack-lg">
+        {guides.some((g) => g.universe === data.slug) && <Section title="Start reading this universe"><GuideShelf items={guides.filter((g) => g.universe === data.slug)} /></Section>}
         <Section title={multiEra ? "Eras" : "Series"} action={<Link href={`/series-list?universe=${data.id}`}>All {plural(data.series_count, "series", "series")}</Link>}>
           {multiEra ? (
             <ol className="list" style={{ margin: 0, padding: 0, listStyle: "none" }}>

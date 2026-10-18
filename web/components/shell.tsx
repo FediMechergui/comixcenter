@@ -6,14 +6,15 @@ import * as I from "@/components/icons";
 import { ToastProvider } from "@/components/ui";
 
 const TABS = [
-  { href: "/", label: "Home", icon: I.Home, match: ["/"] },
+  { href: "/", label: "Discover", icon: I.Home, match: ["/"] },
   { href: "/browse", label: "Browse", icon: I.Browse, match: ["/browse", "/publisher", "/universe", "/series", "/issue", "/arcs", "/arc", "/creator"] },
-  { href: "/orders", label: "Orders", icon: I.Path, match: ["/orders", "/order"] },
+  { href: "/guides", label: "Reading paths", icon: I.Path, match: ["/guides", "/guide", "/orders", "/order"] },
   { href: "/library", label: "Library", icon: I.Library, match: ["/library", "/file", "/opds"] },
   { href: "/search", label: "Search", icon: I.Search, match: ["/search"] },
 ];
 
 const RAIL_EXTRA = [
+  { href: "/orders", label: "My reading orders", icon: I.Path, match: ["/orders", "/order"] },
   { href: "/arcs", label: "Arcs & events", icon: I.Spark, match: ["/arcs", "/arc"] },
   { href: "/characters", label: "Characters", icon: I.Users, match: ["/characters", "/character"] },
   { href: "/teams", label: "Teams", icon: I.Shield, match: ["/teams", "/team"] },
@@ -31,7 +32,8 @@ function isActive(pathname: string, match: string[]) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "/";
-  const immersive = pathname.startsWith("/read");
+  // Only the file reader is chrome-less; a prefix test would also swallow /read-online.
+  const immersive = ["/read", "/read-online"].includes(pathname.replace(/\/$/, ""));
 
   useEffect(() => {
     const native = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();

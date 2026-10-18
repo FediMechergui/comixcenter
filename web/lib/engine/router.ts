@@ -7,6 +7,8 @@
 import { AuthError, NotFoundError, RateLimitError } from "./contracts";
 import { comicvineConfigured, gcdAccountConfigured, getComicVine, getCredentials, getGcd, getMetron, getSavedCredentials, metronConfigured, NotConfiguredError, saveCredentials, transport, type Credentials } from "./clients";
 import { base64Utf8 } from "./sources/http";
+import { isRcoPage, rcoChapters, rcoFind, rcoPageBytes, rcoPages, rcoSlug } from "./sources/rco";
+import { batcaveCatalog, batcaveChapters, batcavePages, batcaveImage, isBatcave } from "./sources/batcave";
 import { GCD_API } from "./sources/gcd";
 import { db, nowIso, type Id, type Tier } from "./db";
 import { enqueue, onJobFinished, P_DERIVE, P_USER, runJob, workerStatus } from "./jobs";
@@ -17,13 +19,14 @@ import * as catalog from "./services/catalog";
 import * as chars from "./services/characters";
 import * as orders from "./services/orders";
 import { search as localSearch } from "./services/search";
+import { exportSnapshot, importSnapshot, SnapshotError } from "./snapshot";
 import { applyStarterPack, starterArcNames } from "./services/starterPack";
 import { deriveMemberships, sharedTeamHistory } from "./services/teams";
 import * as cvSync from "./sync/comicvine";
 import * as gcdSync from "./sync/gcd";
 import * as metronSync from "./sync/metron";
 import { parseOpdsFeed } from "./library";
-import { importFromOpds, browseOpds } from "./opdsClient";
+import { importFromOpds, browseOpds, builtinFeed, builtinFeeds } from "./opdsClient";
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -37,22 +40,24 @@ type Req = { method: string; path: string; query: URLSearchParams; body: any };
 type Route = [string, RegExp, (req: Req, m: RegExpMatchArray) => Promise<unknown>];
 const routes: Route[] = [];
 const route = (method: string, pattern: string, fn: Route[2]) =>
-  routes.push([method, new RegExp(`^${pattern.replace(/:(\w+)/g, "(\\d+)")}/?$`), fn]);
+  routes.push([method, new RegExp(`^${pattern.replace(/:(\w+)/g, "(-?\\d+)")}/?$`), fn]);
 
 // ── System ──
 route("GET", "/api/status", async () => {
   const d = db();
-  const creds = await getCredentials();
-  const jobs = await d.jobs.toArray();
   const w = workerStatus();
+  // The home screen waits on this, so the seven counts run together rather than one after another.
+  const [creds, jobs, series, issues, arcs, characters, teams, reading_orders, library_files] = await Promise.all([
+    getCredentials(), d.jobs.toArray(), d.series.count(), d.issues.count(), d.arcs.count(),
+    d.characters.count(), d.teams.count(), d.readingOrders.count(), d.libraryFiles.count(),
+  ]);
   return {
     version: "0.2.0", mode: "device",
     sources: { metron: metronConfigured(creds), comicvine: comicvineConfigured(creds), gcd: true },
     admin_protected: false,
     worker: { running: w.running, current_job_id: w.current[0] ?? null, queued: jobs.filter((j) => j.status === "queued").length,
       failed: jobs.filter((j) => j.status === "failed").length },
-    counts: { series: await d.series.count(), issues: await d.issues.count(), arcs: await d.arcs.count(), characters: await d.characters.count(),
-      teams: await d.teams.count(), reading_orders: await d.readingOrders.count(), library_files: await d.libraryFiles.count() },
+    counts: { series, issues, arcs, characters, teams, reading_orders, library_files },
     scan_dirs: [], lan_urls: [],
   };
 });
@@ -157,8 +162,43 @@ route("POST", "/api/online/add", async ({ body }) => {
   return { job_id: job.id, status: done?.status, local };
 });
 
+// ── Reading online ──
+// The reader runs in the app: these answer with image URLs, never with a page to open elsewhere.
+route("GET", "/api/online/catalog", ({ query }) => batcaveCatalog(query.get("q") || "", Math.max(1, num(query.get("page")) || 1)));
+route("GET", "/api/online/read/find", async ({ query }) => {
+  const series = query.get("series");
+  if (!series) throw new HttpError(422, "Need a series to look for");
+  const slug = await rcoFind(series, num(query.get("year")));
+  if (!slug) throw new HttpError(404, "No online copy of that series");
+  return { slug, chapter: query.get("number") };
+});
+route("GET", "/api/online/read/chapters", async ({ query }) => {
+  if (isBatcave(query.get("url") || "")) return batcaveChapters(query.get("url")!);
+  const slug = rcoSlug(query.get("url")) ?? query.get("slug");
+  if (!slug) throw new HttpError(422, "No readable link for this book");
+  return { slug, url: query.get("url") || `https://readcomicsonline.ru/comic/${slug}`, source: "rco", chapters: (await rcoChapters(slug)).map((c) => ({ id: c, title: `Issue ${c}`, number: c })) };
+});
+route("GET", "/api/online/read/pages", async ({ query }) => {
+  if (isBatcave(query.get("url") || "")) return batcavePages(query.get("url")!, query.get("chapter") || "");
+  const slug = rcoSlug(query.get("url")) ?? query.get("slug");
+  const chapter = query.get("chapter");
+  if (!slug || !chapter) throw new HttpError(422, "Need a comic and a chapter to read");
+  const found = await rcoPages(slug, chapter);
+  if (!found.pages.length) throw new HttpError(404, "That chapter is not readable online");
+  return { ...found, url: query.get("url") || `https://readcomicsonline.ru/comic/${slug}`, source: "rco", chapters: [] };
+});
+
+route("GET", "/api/online/read/page", async ({ query }) => {
+  const url = query.get("url") ?? "";
+  if (/^https:\/\/img\.batcave\.biz\//i.test(url)) return batcaveImage(url);
+  if (!isRcoPage(url)) throw new HttpError(422, "That is not a readable page");
+  try { return await rcoPageBytes(url); }
+  catch (e) { throw new HttpError(502, (e as Error).message); }
+});
+
 // ── Catalog ──
 route("GET", "/api/publishers", () => catalog.listPublishers());
+route("GET", "/api/universes", async () => Promise.all((await db().universes.orderBy("id").toArray()).map((u) => catalog.universeCard(u))));
 route("GET", "/api/publishers/:id", async (_r, m) => found(await catalog.publisherDetail(+m[1]), "Publisher not found"));
 route("GET", "/api/universes/:id", async (_r, m) => found(await catalog.universeDetail(+m[1]), "Universe not found"));
 route("GET", "/api/series", ({ query: q }) => catalog.listSeries({
@@ -292,19 +332,32 @@ route("GET", "/api/library/:id/pages/:n/panels", async ({ query }, m) => {
 route("PUT", "/api/library/:id/position", async ({ body }, m) => recordPosition(await libFile(+m[1]), Number(body.page)));
 
 // ── OPDS ──
-route("GET", "/api/opds", async () => (await db().opdsFeeds.toArray()).map((f) => ({ id: f.id, name: f.name, url: f.url, username: f.username ?? null, has_password: !!f.password })));
+const feedCard = (f: { id?: Id; name: string; url: string; username?: string | null; password?: string | null }, builtin = false) =>
+  ({ id: f.id, name: f.name, url: f.url, username: f.username ?? null, has_password: !!f.password, builtin });
+/** A built-in feed has no database row, so it is resolved from the shipped list first. */
+const opdsFeed = async (id: number) => builtinFeed(id) ?? found(await db().opdsFeeds.get(id), "Feed not found");
+route("GET", "/api/opds", async () => [
+  ...builtinFeeds().map((f) => feedCard(f, true)),
+  ...(await db().opdsFeeds.toArray()).map((f) => feedCard(f)),
+]);
 route("POST", "/api/opds", async ({ body }) => {
   try { await browseOpds(body.url, body.username, body.password); } catch (e) { throw new HttpError(400, `Could not read that OPDS feed: ${(e as Error).message}`); }
   const id = await db().opdsFeeds.add({ name: body.name, url: body.url, username: body.username || null, password: body.password || null, created_at: nowIso() });
   return { id, name: body.name, url: body.url, username: body.username || null, has_password: !!body.password };
 });
-route("DELETE", "/api/opds/:id", async (_r, m) => { await db().opdsFeeds.delete(+m[1]); return { deleted: +m[1] }; });
+route("DELETE", "/api/opds/:id", async (_r, m) => {
+  if (builtinFeed(+m[1])) throw new HttpError(400, "That feed is built in and cannot be removed");
+  await db().opdsFeeds.delete(+m[1]);
+  return { deleted: +m[1] };
+});
 route("GET", "/api/opds/:id/browse", async ({ query }, m) => {
-  const feed = found(await db().opdsFeeds.get(+m[1]), "Feed not found");
-  try { return await browseOpds(query.get("url") || feed.url, feed.username, feed.password); } catch (e) { throw new HttpError(502, `OPDS feed error: ${(e as Error).message}`); }
+  const feed = await opdsFeed(+m[1]);
+  const target = query.get("url") || feed.url;
+  const sameOrigin = new URL(target).origin === new URL(feed.url).origin;
+  try { return await browseOpds(target, sameOrigin ? feed.username : null, sameOrigin ? feed.password : null); } catch (e) { throw new HttpError(502, `OPDS feed error: ${(e as Error).message}`); }
 });
 route("POST", "/api/opds/:id/import", async ({ body }, m) => {
-  const feed = found(await db().opdsFeeds.get(+m[1]), "Feed not found");
+  const feed = await opdsFeed(+m[1]);
   try {
     const [lf, created] = await importFromOpds(feed, body.href, body.title);
     return { created, file: await fileCard(lf) };
@@ -378,6 +431,11 @@ route("DELETE", "/api/admin/jobs", async ({ query }) => {
   return { deleted: ids.length };
 });
 route("POST", "/api/admin/starter-pack", () => applyStarterPack());
+route("GET", "/api/admin/snapshot", () => exportSnapshot());
+route("POST", "/api/admin/snapshot", async ({ body }) => {
+  try { return { written: await importSnapshot(body) }; }
+  catch (e) { throw new HttpError(e instanceof SnapshotError ? 409 : 400, (e as Error).message); }
+});
 route("GET", "/api/admin/starter-pack/arcs", async () => starterArcNames());
 
 // ── Admin: reading orders ──

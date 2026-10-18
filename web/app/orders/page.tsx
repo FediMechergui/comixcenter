@@ -6,6 +6,9 @@ import * as I from "@/components/icons";
 import { Empty, ErrorBox, Loading, PageHead, Section, Segmented, useAction, useCurateMode } from "@/components/ui";
 import { api, qs, useApi } from "@/lib/api";
 import type { OrderCard } from "@/lib/types";
+import { GuideShelf } from "@/components/guides";
+import { guides } from "@/lib/guides";
+import Link from "next/link";
 
 const KINDS = [
   { value: "all", label: "All" }, { value: "universe", label: "Universes" }, { value: "event", label: "Events" },
@@ -27,6 +30,7 @@ export default function OrdersPage() {
         </p>
       </PageHead>
       <div className="stack-lg">
+        <Section title="Ready to read" action={<Link href="/guides">All reading guides</Link>}><GuideShelf items={guides.filter((g) => g.tags.includes("Mainline")).slice(0, 4)} /></Section>
         <Segmented label="Order type" value={kind} onChange={setKind} options={KINDS} />
         {error && <ErrorBox error={error} retry={() => mutate()} />}
         {!data && !error && <Loading lines={6} />}

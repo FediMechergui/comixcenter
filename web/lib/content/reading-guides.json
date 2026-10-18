@@ -1,0 +1,732 @@
+[
+  {
+    "slug": "marvel-modern",
+    "title": "Marvel: the modern mainline",
+    "universe": "earth-616",
+    "publisher": "Marvel",
+    "tagline": "From a broken Avengers to a rebuilt multiverse.",
+    "description": "A focused route through major modern events. This is an editorial starting path, not every Marvel issue. Read the core miniseries first; explore tie-ins when you want more.",
+    "tags": [
+      "Mainline",
+      "Avengers",
+      "Iron Man",
+      "Captain America"
+    ],
+    "steps": [
+      {
+        "title": "Avengers",
+        "year": 2004,
+        "issues": "#500–503",
+        "note": "Avengers Disassembled breaks the team apart.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "House of M",
+        "year": 2005,
+        "issues": "#1–8",
+        "note": "An altered reality reshapes the mutant world.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Civil War",
+        "year": 2006,
+        "issues": "#1–7",
+        "note": "Registration divides the heroes.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Secret Invasion",
+        "year": 2008,
+        "issues": "#1–8",
+        "note": "The Skrull infiltration comes into the open.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Siege",
+        "year": 2010,
+        "issues": "#1–4",
+        "note": "The Dark Reign era reaches its ending.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Avengers",
+        "year": 2012,
+        "issues": "#1–44",
+        "note": "Jonathan Hickman builds toward the incursions. Read alongside New Avengers (2013).",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "New Avengers",
+        "year": 2013,
+        "issues": "#1–33",
+        "note": "The Illuminati confront dying universes. Alternate with Avengers using the collected-edition order.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "Secret Wars",
+        "year": 2015,
+        "issues": "#1–9",
+        "note": "Battleworld closes the incursion story.",
+        "tier": "essential",
+        "milestone": null
+      }
+    ]
+  },
+  {
+    "slug": "dc-modern",
+    "title": "DC: crisis to rebirth",
+    "universe": "dc-prime",
+    "publisher": "DC",
+    "tagline": "A map through DC's changing continuity.",
+    "description": "Major continuity landmarks, in publication order. These stories span resets; they are not one uninterrupted timeline. Follow individual heroes between events.",
+    "tags": [
+      "Mainline",
+      "Justice League",
+      "Superman",
+      "Batman"
+    ],
+    "steps": [
+      {
+        "title": "Crisis on Infinite Earths",
+        "year": 1985,
+        "issues": "#1–12",
+        "note": "The original multiverse gives way to a shared continuity.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Infinite Crisis",
+        "year": 2005,
+        "issues": "#1–7",
+        "note": "Legacy and identity collide.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Final Crisis",
+        "year": 2008,
+        "issues": "#1–7",
+        "note": "Darkseid threatens reality itself.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "Flashpoint",
+        "year": 2011,
+        "issues": "#1–5",
+        "note": "An altered timeline leads into the New 52.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Justice League",
+        "year": 2011,
+        "issues": "#1–6",
+        "note": "The New 52 team forms.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "DC Universe: Rebirth",
+        "year": 2016,
+        "issues": "#1",
+        "note": "A new starting point built around legacy.",
+        "tier": "essential",
+        "milestone": null
+      }
+    ]
+  },
+  {
+    "slug": "ultimate-marvel",
+    "title": "The original Ultimate universe",
+    "universe": "earth-1610",
+    "publisher": "Marvel",
+    "tagline": "Familiar heroes. A separate beginning.",
+    "description": "Start with the original Ultimate line. This continuity is separate from the newer Earth-6160 Ultimate books.",
+    "tags": [
+      "Mainline",
+      "Spider-Man",
+      "Miles Morales",
+      "Avengers"
+    ],
+    "steps": [
+      {
+        "title": "Ultimate Spider-Man",
+        "year": 2000,
+        "issues": "#1–7",
+        "note": "Peter Parker's origin, retold for the Ultimate line.",
+        "tier": "essential",
+        "milestone": "Peter becomes Spider-Man"
+      },
+      {
+        "title": "Ultimate X-Men",
+        "year": 2001,
+        "issues": "#1–6",
+        "note": "A new version of the mutant team.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "The Ultimates",
+        "year": 2002,
+        "issues": "#1–13",
+        "note": "The Ultimate universe's Avengers.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Ultimate Comics Spider-Man",
+        "year": 2011,
+        "issues": "#1–5",
+        "note": "Miles Morales takes up the mantle.",
+        "tier": "essential",
+        "milestone": "Miles takes the mantle"
+      }
+    ]
+  },
+  {
+    "slug": "new-ultimate",
+    "title": "The new Ultimate universe",
+    "universe": "earth-6160",
+    "publisher": "Marvel",
+    "tagline": "A world rewritten by the Maker.",
+    "description": "A clean entry into the newer Ultimate continuity. Begin with the event, then choose the ongoing series you want to follow.",
+    "tags": [
+      "Mainline",
+      "Spider-Man",
+      "Black Panther",
+      "X-Men"
+    ],
+    "steps": [
+      {
+        "title": "Ultimate Invasion",
+        "year": 2023,
+        "issues": "#1–4",
+        "note": "The Maker sets a different history in motion.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Ultimate Universe",
+        "year": 2023,
+        "issues": "#1",
+        "note": "The new world's foundations.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Ultimate Spider-Man",
+        "year": 2024,
+        "issues": "#1–6",
+        "note": "An adult Peter Parker begins a different life.",
+        "tier": "essential",
+        "milestone": "Peter chooses a second chance"
+      },
+      {
+        "title": "Ultimate Black Panther",
+        "year": 2024,
+        "issues": "#1–6",
+        "note": "Wakanda enters the conflict.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "Ultimate X-Men",
+        "year": 2024,
+        "issues": "#1–6",
+        "note": "Mutant discovery through a different lens.",
+        "tier": "recommended",
+        "milestone": null
+      }
+    ]
+  },
+  {
+    "slug": "absolute-dc",
+    "title": "DC's Absolute universe",
+    "universe": "dc-absolute",
+    "publisher": "DC",
+    "tagline": "A different foundation for the Trinity.",
+    "description": "An alternate universe with independent starting points. Each opening arc can be read on its own; read DC All In Special for the larger setup.",
+    "tags": [
+      "Mainline",
+      "Batman",
+      "Superman",
+      "Wonder Woman"
+    ],
+    "steps": [
+      {
+        "title": "DC All In Special",
+        "year": 2024,
+        "issues": "#1",
+        "note": "The wider context for the Absolute line.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "Absolute Batman",
+        "year": 2024,
+        "issues": "#1–6",
+        "note": "Bruce Wayne without the familiar advantages.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Absolute Wonder Woman",
+        "year": 2024,
+        "issues": "#1–5",
+        "note": "Diana's origins take another path.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Absolute Superman",
+        "year": 2024,
+        "issues": "#1–6",
+        "note": "A different relationship with Krypton and Earth.",
+        "tier": "essential",
+        "milestone": null
+      }
+    ]
+  },
+  {
+    "slug": "batman-origins",
+    "title": "Batman: becoming the detective",
+    "universe": "dc-prime",
+    "publisher": "DC",
+    "tagline": "From the first year to a larger family.",
+    "description": "An accessible early-career Batman route. Publication dates and story chronology differ; this guide follows the character's early development.",
+    "tags": [
+      "Character",
+      "Batman",
+      "Catwoman",
+      "Robin"
+    ],
+    "steps": [
+      {
+        "title": "Batman",
+        "year": 1940,
+        "issues": "#404–407 · Year One",
+        "note": "Bruce learns what being Batman demands.",
+        "tier": "essential",
+        "milestone": "The first year"
+      },
+      {
+        "title": "Batman: The Man Who Laughs",
+        "year": 2005,
+        "issues": "#1",
+        "note": "An early encounter with the Joker.",
+        "tier": "essential",
+        "milestone": "A defining enemy"
+      },
+      {
+        "title": "Batman: The Long Halloween",
+        "year": 1996,
+        "issues": "#1–13",
+        "note": "A murder mystery changes Gotham's underworld.",
+        "tier": "essential",
+        "milestone": "Gotham changes"
+      },
+      {
+        "title": "Batman: Dark Victory",
+        "year": 1999,
+        "issues": "#0–13",
+        "note": "Dick Grayson enters the story.",
+        "tier": "essential",
+        "milestone": "Batman becomes a mentor"
+      }
+    ],
+    "sources": [
+      {
+        "title": "DC: Batman Year One, The Long Halloween and Dark Victory",
+        "url": "https://www.dc.com/highvolume"
+      }
+    ]
+  },
+  {
+    "slug": "superman-essentials",
+    "title": "Superman: what makes a hero",
+    "universe": "dc-prime",
+    "publisher": "DC",
+    "tagline": "Origins, responsibility and compassion.",
+    "description": "Four complementary perspectives on Superman. These stories do not all share one continuity; read them as distinct portraits of the character.",
+    "tags": [
+      "Character",
+      "Superman"
+    ],
+    "steps": [
+      {
+        "title": "Superman: Birthright",
+        "year": 2003,
+        "issues": "#1–12",
+        "note": "Clark finds his place in the world.",
+        "tier": "essential",
+        "milestone": "Choosing an identity"
+      },
+      {
+        "title": "Superman: For All Seasons",
+        "year": 1998,
+        "issues": "#1–4",
+        "note": "The people around Clark show who he is.",
+        "tier": "essential",
+        "milestone": "A life beyond the cape"
+      },
+      {
+        "title": "Superman: Secret Identity",
+        "year": 2004,
+        "issues": "#1–4",
+        "note": "A separate-world story about a familiar name.",
+        "tier": "recommended",
+        "milestone": "Growing with the role"
+      },
+      {
+        "title": "All-Star Superman",
+        "year": 2005,
+        "issues": "#1–12",
+        "note": "A self-contained celebration of Superman's ideals.",
+        "tier": "essential",
+        "milestone": "The lasting ideal"
+      }
+    ]
+  },
+  {
+    "slug": "xmen-krakoa",
+    "title": "X-Men: the road into Krakoa",
+    "universe": "earth-616",
+    "publisher": "Marvel",
+    "tagline": "A nation, a promise, and its cost.",
+    "description": "Begin with the paired House of X and Powers of X miniseries. Alternate them using the reading checklist printed in the issues, rather than reading one series straight through.",
+    "tags": [
+      "Event",
+      "X-Men",
+      "Magneto",
+      "Professor X"
+    ],
+    "steps": [
+      {
+        "title": "House of X",
+        "year": 2019,
+        "issues": "#1",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": "A mutant nation"
+      },
+      {
+        "title": "Powers of X",
+        "year": 2019,
+        "issues": "#1",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "House of X",
+        "year": 2019,
+        "issues": "#2",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Powers of X",
+        "year": 2019,
+        "issues": "#2",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Powers of X",
+        "year": 2019,
+        "issues": "#3",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "House of X",
+        "year": 2019,
+        "issues": "#3",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "House of X",
+        "year": 2019,
+        "issues": "#4",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Powers of X",
+        "year": 2019,
+        "issues": "#4",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "House of X",
+        "year": 2019,
+        "issues": "#5",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Powers of X",
+        "year": 2019,
+        "issues": "#5",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "House of X",
+        "year": 2019,
+        "issues": "#6",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Powers of X",
+        "year": 2019,
+        "issues": "#6",
+        "note": "Follow the paired miniseries in the original issue-checklist order.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "X-Men",
+        "year": 2019,
+        "issues": "#1–12",
+        "note": "Explore the new status quo.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "X of Swords: Creation",
+        "year": 2020,
+        "issues": "#1",
+        "note": "The opening of the X of Swords crossover. Use the event checklist for its 22 chapters.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "Inferno",
+        "year": 2021,
+        "issues": "#1–4",
+        "note": "The founding promises face a reckoning.",
+        "tier": "essential",
+        "milestone": "Secrets come due"
+      }
+    ],
+    "sources": [
+      {
+        "title": "Marvel: House of X / Powers of X",
+        "url": "https://www.marvel.com/comics/guides/1556/house-of-x-powers-of-x"
+      }
+    ]
+  },
+  {
+    "slug": "invincible",
+    "title": "Invincible: the complete core series",
+    "universe": "invincible-universe",
+    "publisher": "Image",
+    "tagline": "One hero, from the beginning to the end.",
+    "description": "The core Invincible series tells a complete story in 144 issues. Side series are optional; these ranges divide the main series into manageable stages.",
+    "tags": [
+      "Character",
+      "Invincible",
+      "Mainline"
+    ],
+    "steps": [
+      {
+        "title": "Invincible",
+        "year": 2003,
+        "issues": "#1–13",
+        "note": "Meet Mark Grayson and the world he inherits.",
+        "tier": "essential",
+        "milestone": "Becoming a hero"
+      },
+      {
+        "title": "Invincible",
+        "year": 2003,
+        "issues": "#14–47",
+        "note": "Responsibility grows beyond school and home.",
+        "tier": "essential",
+        "milestone": "An independent identity"
+      },
+      {
+        "title": "Invincible",
+        "year": 2003,
+        "issues": "#48–96",
+        "note": "Conflicts expand across the wider universe.",
+        "tier": "essential",
+        "milestone": "Consequences"
+      },
+      {
+        "title": "Invincible",
+        "year": 2003,
+        "issues": "#97–144",
+        "note": "Follow the choices that shape the ending.",
+        "tier": "essential",
+        "milestone": "Building a future"
+      }
+    ]
+  },
+  {
+    "slug": "hellboy",
+    "title": "Hellboy: the first investigations",
+    "universe": "mignolaverse",
+    "publisher": "Dark Horse",
+    "tagline": "Folklore, monsters, and a reluctant destiny.",
+    "description": "A compact route into the Hellboy universe. The early collections are a comfortable way to follow the stories before branching into B.P.R.D.",
+    "tags": [
+      "Character",
+      "Hellboy"
+    ],
+    "steps": [
+      {
+        "title": "Hellboy: Seed of Destruction",
+        "year": 1994,
+        "issues": "#1–4",
+        "note": "The core mystery and cast take shape.",
+        "tier": "essential",
+        "milestone": "An origin uncovered"
+      },
+      {
+        "title": "Hellboy: Wake the Devil",
+        "year": 1996,
+        "issues": "#1–5",
+        "note": "The mythic stakes grow.",
+        "tier": "essential",
+        "milestone": "Destiny pushes back"
+      },
+      {
+        "title": "Hellboy: The Chained Coffin and Others",
+        "year": 1998,
+        "issues": "Collected edition",
+        "note": "Short stories deepen the folklore.",
+        "tier": "recommended",
+        "milestone": null
+      },
+      {
+        "title": "Hellboy: The Right Hand of Doom",
+        "year": 2000,
+        "issues": "Collected edition",
+        "note": "Further stories about the burden Hellboy carries.",
+        "tier": "recommended",
+        "milestone": null
+      }
+    ]
+  },
+  {
+    "slug": "energon",
+    "title": "Enter the Energon universe",
+    "universe": "energon-universe",
+    "publisher": "Image",
+    "tagline": "Transformers and G.I. Joe share a world.",
+    "description": "Start with Void Rivals, then enter the parallel Transformers and G.I. Joe stories. This is an opening route, not a strict issue-by-issue crossover chronology.",
+    "tags": [
+      "Mainline",
+      "Transformers",
+      "G.I. Joe"
+    ],
+    "steps": [
+      {
+        "title": "Void Rivals",
+        "year": 2023,
+        "issues": "#1–6",
+        "note": "The shared universe begins here.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Transformers",
+        "year": 2023,
+        "issues": "#1–6",
+        "note": "The robots arrive on Earth.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Duke",
+        "year": 2023,
+        "issues": "#1–5",
+        "note": "A human perspective on the new threat.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Cobra Commander",
+        "year": 2024,
+        "issues": "#1–5",
+        "note": "The other side begins to organize.",
+        "tier": "essential",
+        "milestone": null
+      }
+    ],
+    "sources": [
+      {
+        "title": "Skybound: Energon Universe",
+        "url": "https://insiders.skybound.com/article/yo-joe-skybound-brings-the-heat-to-nycc-with-an-epic-energon-universe-lineup"
+      }
+    ]
+  },
+  {
+    "slug": "standalone",
+    "title": "Great stories, no homework",
+    "universe": "standalone",
+    "publisher": "Independent",
+    "tagline": "A complete story is a good place to start.",
+    "description": "Independent starting points and self-contained books. Choose any one; there is no required order between these stories.",
+    "tags": [
+      "Standalone",
+      "Beginner"
+    ],
+    "steps": [
+      {
+        "title": "Watchmen",
+        "year": 1986,
+        "issues": "#1–12",
+        "note": "A complete superhero mystery.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Batman: The Dark Knight Returns",
+        "year": 1986,
+        "issues": "#1–4",
+        "note": "An alternate future for an older Batman.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "Superman for All Seasons",
+        "year": 1998,
+        "issues": "#1–4",
+        "note": "A quiet portrait of a hero's beginnings.",
+        "tier": "essential",
+        "milestone": null
+      },
+      {
+        "title": "V for Vendetta",
+        "year": 1988,
+        "issues": "Collected edition",
+        "note": "A self-contained dystopian story.",
+        "tier": "essential",
+        "milestone": null
+      }
+    ]
+  }
+]

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { CornerBox, Cover, IssueTile } from "@/components/cards";
+import { ReadOnlineButton } from "@/components/feed";
 import * as I from "@/components/icons";
 import { useNumberParam, withParams } from "@/components/params";
 import { ErrorBox, Facts, formatDate, Loading, PageHead, Section, TierChip, useAction, useCurateMode } from "@/components/ui";
@@ -41,7 +42,7 @@ function IssuePage() {
             <div className="row">
               {file
                 ? <Link className="btn" href={`/read?file=${file.id}`}><I.Book />{file.current_page > 0 ? `Continue (p. ${file.current_page + 1})` : "Read your copy"}</Link>
-                : null}
+                : <ReadOnlineButton series={d.series.name} year={d.series.year_began} number={d.number} title={`${d.series.name} #${d.number}`} />}
               <button className={`btn ${file ? "secondary" : ""}`} onClick={toggleRead} disabled={busy} aria-pressed={d.read}>
                 <I.Check />{d.read ? "Read" : "Mark as read"}
               </button>

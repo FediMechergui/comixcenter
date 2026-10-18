@@ -5,6 +5,8 @@ import { useNumberParam, useSetParams, useStringParam, withParams } from "@/comp
 import { Empty, ErrorBox, Loading, PageHead, plural } from "@/components/ui";
 import { qs, useApi } from "@/lib/api";
 import type { CharacterCard, Page } from "@/lib/types";
+import { GuideShelf } from "@/components/guides";
+import { guides } from "@/lib/guides";
 
 function CharactersPage() {
   const q = useStringParam("q") ?? "";
@@ -19,6 +21,7 @@ function CharactersPage() {
   return (
     <>
       <PageHead eyebrow="Catalog" title="Characters" />
+      <div className="character-journey"><GuideShelf items={guides.filter((g) => g.tags.includes("Character") && (!q || `${g.title} ${g.tags.join(" ")}`.toLowerCase().includes(q.toLowerCase())))} /></div>
       <div className="row" style={{ marginBottom: 14 }}>
         <label className="visually-hidden" htmlFor="cq">Find a character</label>
         <input id="cq" className="input" style={{ maxWidth: 340 }} placeholder="Name, hero name or real name" value={text} onChange={(e) => setText(e.target.value)} />

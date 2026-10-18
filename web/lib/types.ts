@@ -194,6 +194,7 @@ export interface Job {
 export interface OpdsEntry {
   title: string; summary: string | null; author: string | null; cover: string | null;
   kind: "navigation" | "publication"; href: string | null; acquisitions: { href: string; type: string | null }[];
+  reader_url?: string | null;
 }
 
 export interface OpdsFeedPage { title: string; entries: OpdsEntry[]; next: string | null; previous: string | null; up: string | null; url: string }

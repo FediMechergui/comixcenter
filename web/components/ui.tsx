@@ -182,3 +182,18 @@ export function useCurateMode(): [boolean, (on: boolean) => void] {
   }, []);
   return [on, set];
 }
+
+/**
+ * The loading / error dance each screen was spelling out by hand. Routing every query through it
+ * means a failure always offers the same retry and a pending screen always shows the same
+ * skeleton, instead of each page deciding for itself which of the three states it bothers with.
+ */
+export function Async<T>({ query, lines, children }: {
+  query: { data: T | undefined; error: unknown; mutate: () => void };
+  lines?: number;
+  children: (data: T) => ReactNode;
+}) {
+  if (query.error) return <ErrorBox error={query.error} retry={() => query.mutate()} />;
+  if (query.data === undefined) return <Loading lines={lines} />;
+  return <>{children(query.data)}</>;
+}

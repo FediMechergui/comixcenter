@@ -37,6 +37,7 @@ export async function importComic(bytes: Uint8Array, originalName: string, progr
   }
   const dir = `library/${digest.slice(0, 2)}/${digest}`;
   const store = fileStore();
+  let insertedId: Id | undefined;
   try {
     if (source.pageCount === 0) throw new ImportError(`${originalName} contains no pages`);
     const pageExt: string[] = [];
@@ -55,9 +56,11 @@ export async function importComic(bytes: Uint8Array, originalName: string, progr
       parsed: guessFromFilename(originalName) as unknown as Record<string, unknown>, page_ext: pageExt, opds_feed_id: opdsFeedId ?? null,
     };
     file.id = await d.libraryFiles.add(file);
+    insertedId = file.id;
     await applyMatch(file);
     return [(await d.libraryFiles.get(file.id))!, true];
   } catch (e) {
+    if (insertedId != null) await d.libraryFiles.delete(insertedId);
     await store.removeDir(dir);
     throw e instanceof ImportError ? e : new ImportError(`${originalName}: ${(e as Error).message}`);
   } finally {

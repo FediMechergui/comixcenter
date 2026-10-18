@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import * as I from "@/components/icons";
-import { ErrorBox, formatDate, PageHead, plural, Section, Segmented, useAction, useCurateMode } from "@/components/ui";
+import { Async, ErrorBox, formatDate, PageHead, plural, Section, Segmented, useAction, useCurateMode } from "@/components/ui";
 import { api, dataMode, qs, refresh, useApi } from "@/lib/api";
 import { OnlineResults } from "@/components/online";
 import type { Job, Status } from "@/lib/types";
@@ -155,24 +155,24 @@ function Jobs() {
       <Segmented label="Show jobs" value={filter} onChange={setFilter} options={[
         { value: "all", label: "All" }, { value: "queued", label: `Waiting ${data?.counts.queued ?? ""}` },
         { value: "failed", label: `Failed ${data?.counts.failed ?? ""}` }, { value: "done", label: "Done" }]} />
-      {error && <ErrorBox error={error} />}
-      {data && data.jobs.length === 0 && <p className="muted">No jobs{filter !== "all" ? " here" : " yet"}.</p>}
-      {data && data.jobs.length > 0 && (
-        <div className="list">
-          {data.jobs.map((j) => (
-            <div key={j.id} className="list-row" style={{ gridTemplateColumns: "92px 1fr auto" }}>
-              <span className={`tier ${j.status === "done" ? "tier-recommended" : j.status === "failed" ? "tier-tie_in" : j.status === "running" ? "tier-essential" : "tier-optional"}`}>{j.status}</span>
-              <span className="body">
-                <strong>{JOB_LABEL[j.kind] ?? j.kind}{j.progress ? `: ${j.progress}` : ""}</strong>
-                <span className="mono">{j.run_after && j.status === "queued" ? `Waiting for the rate limit until ${formatDate(j.run_after, "full")} ` : ""}
-                  {formatDate(j.created_at, "full")}{j.attempts > 1 ? ` · attempt ${j.attempts}` : ""}</span>
-                {j.error && <span className="small" style={{ color: "var(--danger)", whiteSpace: "pre-wrap" }}>{j.error.split("\n")[0]}</span>}
-              </span>
-              {j.status === "failed" && <button className="btn ghost small" onClick={() => run(() => api.post(`/api/admin/jobs/${j.id}/retry`), "Queued again").then(() => mutate())}>Retry</button>}
-            </div>
-          ))}
-        </div>
-      )}
+      <Async query={{ data, error, mutate }} lines={2}>
+        {(d) => d.jobs.length === 0 ? <p className="muted">No jobs{filter !== "all" ? " here" : " yet"}.</p> : (
+          <div className="list">
+            {d.jobs.map((j) => (
+              <div key={j.id} className="list-row" style={{ gridTemplateColumns: "92px 1fr auto" }}>
+                <span className={`tier ${j.status === "done" ? "tier-recommended" : j.status === "failed" ? "tier-tie_in" : j.status === "running" ? "tier-essential" : "tier-optional"}`}>{j.status}</span>
+                <span className="body">
+                  <strong>{JOB_LABEL[j.kind] ?? j.kind}{j.progress ? `: ${j.progress}` : ""}</strong>
+                  <span className="mono">{j.run_after && j.status === "queued" ? `Waiting for the rate limit until ${formatDate(j.run_after, "full")} ` : ""}
+                    {formatDate(j.created_at, "full")}{j.attempts > 1 ? ` · attempt ${j.attempts}` : ""}</span>
+                  {j.error && <span className="small" style={{ color: "var(--danger)", whiteSpace: "pre-wrap" }}>{j.error.split("\n")[0]}</span>}
+                </span>
+                {j.status === "failed" && <button className="btn ghost small" onClick={() => run(() => api.post(`/api/admin/jobs/${j.id}/retry`), "Queued again").then(() => mutate())}>Retry</button>}
+              </div>
+            ))}
+          </div>
+        )}
+      </Async>
       <p className="small muted" style={{ margin: 0 }}>Finished syncs show up in <Link href="/browse" style={{ color: "var(--cyan-ink)" }}>Browse</Link> right away.</p>
     </Section>
   );

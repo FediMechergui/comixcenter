@@ -4,7 +4,7 @@ import { AppShell } from "@/components/shell";
 import { THEME_BOOT } from "@/lib/theme";
 import "./globals.css";
 
-const shoulders = Big_Shoulders({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-shoulders" });
+const shoulders = Big_Shoulders({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-shoulders", adjustFontFallback: false });
 const atkinson = Atkinson_Hyperlegible({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-atkinson" });
 const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-plex-mono" });
 

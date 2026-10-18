@@ -97,7 +97,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (dataMode() === "device") return deviceRequest<T>(path, init);
   const headers = new Headers(init.headers);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), init.body instanceof FormData ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), init.body instanceof FormData ? UPLOAD_TIMEOUT_MS : path.startsWith("/api/online/") ? 120_000 : TIMEOUT_MS);
   const token = adminToken();
   if (token) headers.set("X-Admin-Token", token);
   if (init.body && !(init.body instanceof FormData)) headers.set("Content-Type", "application/json");
@@ -137,8 +137,15 @@ export const api = {
   del: <T,>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
+/**
+ * Screens are revisited constantly (tab bar, back, breadcrumbs) and most of them ask for data
+ * that has not moved. SWR's two-second window was short enough that every return trip re-ran the
+ * query; a sync finishing still refreshes everything through `refresh`, which bypasses this.
+ */
+const DEDUPE_MS = 30_000;
+
 export function useApi<T>(path: string | null, config?: SWRConfiguration<T>) {
-  return useSWR<T>(path, (p: string) => api.get<T>(p), { revalidateOnFocus: false, ...config });
+  return useSWR<T>(path, (p: string) => api.get<T>(p), { revalidateOnFocus: false, dedupingInterval: DEDUPE_MS, ...config });
 }
 
 /** Refetch every cached query whose path starts with one of the prefixes. */

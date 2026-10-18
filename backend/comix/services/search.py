@@ -22,7 +22,9 @@ def search(session: Session, q: str, kinds: Optional[Iterable[str]] = None, limi
     match = fts_query(q)
     if match is None:
         return {"query": q, "results": []}
-    wanted = set(kinds or KINDS)
+    wanted = set(kinds or KINDS) & set(KINDS)
+    if not wanted:
+        return {"query": q, "results": []}
     fts_kinds = set(wanted) | ({"identity"} if "character" in wanted else set())
     rows = session.execute(text(f"""
         SELECT kind, ref_id, bm25(search_index, 0.0, 0.0, 10.0, 1.0) AS score

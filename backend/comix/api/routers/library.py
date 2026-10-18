@@ -3,6 +3,7 @@ import io
 import shutil
 import tempfile
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import List, Literal, Optional
 
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
@@ -12,7 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from comix.api.deps import DB, found
+from comix.api.deps import DB, Admin, found
 from comix.config import get_settings
 from comix.library import opds
 from comix.library.archives import ArchiveError
@@ -71,7 +72,7 @@ def library(q: Optional[str] = None, status: Literal["all", "matched", "unmatche
     return {"items": [file_card(db, lf) for lf in rows], "total": total, "page": page, "size": size, "counts": counts}
 
 
-@router.post("/upload")
+@router.post("/upload", dependencies=[Admin])
 async def upload(files: List[UploadFile] = File(...), db: Session = DB):
     results = []
     for upload_file in files:
@@ -95,7 +96,7 @@ class ScanRequest(BaseModel):
     paths: Optional[List[str]] = None
 
 
-@router.post("/scan")
+@router.post("/scan", dependencies=[Admin])
 def scan(body: ScanRequest, db: Session = DB):
     """Imports owned files from server folders (COMIX_SCAN_DIRS by default), referencing them in place."""
     dirs = [Path(p) for p in body.paths] if body.paths else get_settings().scan_dirs
@@ -115,7 +116,7 @@ class MatchUpdate(BaseModel):
     issue_id: Optional[int] = None   # None clears a manual match and lets auto-matching run again
 
 
-@router.patch("/{file_id}")
+@router.patch("/{file_id}", dependencies=[Admin])
 def set_match(file_id: int, body: MatchUpdate, db: Session = DB):
     lf = found(db.get(LibraryFile, file_id), "File not found")
     if body.issue_id is not None:
@@ -128,7 +129,7 @@ def set_match(file_id: int, body: MatchUpdate, db: Session = DB):
     return file_card(db, lf)
 
 
-@router.post("/{file_id}/rematch")
+@router.post("/{file_id}/rematch", dependencies=[Admin])
 def rematch(file_id: int, db: Session = DB):
     lf = found(db.get(LibraryFile, file_id), "File not found")
     if lf.match_method == "manual":
@@ -138,7 +139,7 @@ def rematch(file_id: int, db: Session = DB):
     return file_card(db, lf)
 
 
-@router.delete("/{file_id}")
+@router.delete("/{file_id}", dependencies=[Admin])
 def delete_file(file_id: int, db: Session = DB):
     lf = found(db.get(LibraryFile, file_id), "File not found")
     remove_file(db, lf)
@@ -208,7 +209,7 @@ class Position(BaseModel):
     page: int
 
 
-@router.put("/{file_id}/position")
+@router.put("/{file_id}/position", dependencies=[Admin])
 def position(file_id: int, body: Position, db: Session = DB):
     lf = found(db.get(LibraryFile, file_id), "File not found")
     finished = record_position(db, lf, body.page)
@@ -237,12 +238,19 @@ def feed_card(f: OpdsFeed) -> dict:
     return {"id": f.id, "name": f.name, "url": f.url, "username": f.username, "has_password": bool(f.password)}
 
 
+def feed_credentials(feed: OpdsFeed, url: str):
+    expected, target = urlparse(feed.url), urlparse(url)
+    if (expected.scheme, expected.netloc) != (target.scheme, target.netloc):
+        return None, None
+    return feed.username, feed.password
+
+
 @opds_router.get("")
 def feeds(db: Session = DB):
     return [feed_card(f) for f in db.scalars(select(OpdsFeed).order_by(OpdsFeed.name))]
 
 
-@opds_router.post("")
+@opds_router.post("", dependencies=[Admin])
 def add_feed(body: FeedIn, db: Session = DB):
     try:
         opds.browse(body.url, body.username, body.password)
@@ -254,7 +262,7 @@ def add_feed(body: FeedIn, db: Session = DB):
     return feed_card(feed)
 
 
-@opds_router.delete("/{feed_id}")
+@opds_router.delete("/{feed_id}", dependencies=[Admin])
 def delete_feed(feed_id: int, db: Session = DB):
     db.delete(found(db.get(OpdsFeed, feed_id), "Feed not found"))
     db.commit()
@@ -265,7 +273,8 @@ def delete_feed(feed_id: int, db: Session = DB):
 def browse_feed(feed_id: int, url: Optional[str] = None, db: Session = DB):
     feed = found(db.get(OpdsFeed, feed_id), "Feed not found")
     try:
-        return opds.browse(url or feed.url, feed.username, feed.password)
+        target = url or feed.url
+        return opds.browse(target, *feed_credentials(feed, target))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(502, f"OPDS feed error: {exc}")
 
@@ -275,11 +284,11 @@ class OpdsImport(BaseModel):
     title: Optional[str] = None
 
 
-@opds_router.post("/{feed_id}/import")
+@opds_router.post("/{feed_id}/import", dependencies=[Admin])
 def import_from_feed(feed_id: int, body: OpdsImport, db: Session = DB):
     feed = found(db.get(OpdsFeed, feed_id), "Feed not found")
     try:
-        tmp = opds.download(body.href, feed.username, feed.password)
+        tmp = opds.download(body.href, *feed_credentials(feed, body.href))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(502, f"Download failed: {exc}")
     try:

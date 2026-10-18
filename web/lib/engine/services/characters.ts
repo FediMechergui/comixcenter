@@ -1,19 +1,45 @@
 /** Characters (mantles) and identities, the appearance index, and team pages (port of characters.py). */
-import { db, type Character, type Id, type Issue } from "../db";
+import { db, type Character, type Id, type Identity, type Issue, type Team } from "../db";
 import { issueCards } from "./catalog";
 import { linkedTeams, rosterTimeline, sharedTeamHistory } from "./teams";
 
-async function issueRef(id: Id | null | undefined) {
-  if (!id) return null;
-  const i = await db().issues.get(id);
-  if (!i) return null;
-  const s = await db().series.get(i.series_id);
-  return { id: i.id!, label: `${s?.name ?? ""} #${i.number}`, cover_date: i.cover_date ?? null, image_url: i.image_url ?? null };
+interface IssueRef { id: Id; label: string; cover_date: string | null; image_url: string | null }
+
+function groupBy<T, K>(rows: T[], key: (row: T) => K): Map<K, T[]> {
+  const out = new Map<K, T[]>();
+  for (const row of rows) {
+    const list = out.get(key(row));
+    if (list) list.push(row);
+    else out.set(key(row), [row]);
+  }
+  return out;
 }
 
-async function appearanceCount(characterId: Id) {
-  const ids = (await db().identities.where("character_id").equals(characterId).toArray()).map((i) => i.id!);
-  return ids.length ? db().appearances.where("identity_id").anyOf(ids).count() : 0;
+/** Every reference a page needs in two reads, rather than an issue get plus a series get each. */
+async function issueRefs(ids: (Id | null | undefined)[]): Promise<Map<Id, IssueRef>> {
+  const d = db();
+  const unique = [...new Set(ids.filter((i): i is Id => !!i))];
+  if (!unique.length) return new Map();
+  const issues = (await d.issues.bulkGet(unique)).filter(Boolean) as Issue[];
+  const series = (await d.series.bulkGet([...new Set(issues.map((i) => i.series_id))])).filter(Boolean);
+  const names = new Map(series.map((x) => [x!.id!, x!.name]));
+  return new Map(issues.map((i) => [i.id!, { id: i.id!, label: `${names.get(i.series_id) ?? ""} #${i.number}`,
+    cover_date: i.cover_date ?? null, image_url: i.image_url ?? null }]));
+}
+
+async function issueRef(id: Id | null | undefined): Promise<IssueRef | null> {
+  if (!id) return null;
+  return (await issueRefs([id])).get(id) ?? null;
+}
+
+/** identity_id → appearances, from one walk of the index instead of a count() per character. */
+async function appearanceCounts(): Promise<Map<Id, number>> {
+  const counts = new Map<Id, number>();
+  for (const key of await db().appearances.orderBy("identity_id").keys()) {
+    const identityId = key as Id;
+    counts.set(identityId, (counts.get(identityId) ?? 0) + 1);
+  }
+  return counts;
 }
 
 export async function listCharacters(q?: string | null, publisherId?: number | null, page = 1, size = 60) {
@@ -26,11 +52,17 @@ export async function listCharacters(q?: string | null, publisherId?: number | n
     chars = await d.characters.filter((c) => c.name.toLowerCase().includes(l) || viaIdentity.has(c.id!)).toArray();
   } else chars = await d.characters.toArray();
   if (publisherId) chars = chars.filter((c) => c.publisher_id === publisherId);
-  const withCounts = await Promise.all(chars.map(async (c) => ({ c, apps: await appearanceCount(c.id!) })));
+  // Counting and naming every character used to cost two queries each; both tables are read once.
+  const [identities, counts] = await Promise.all([d.identities.toArray(), appearanceCounts()]);
+  const byCharacter = groupBy(identities, (i) => i.character_id);
+  const withCounts = chars.map((c) => ({
+    c, apps: (byCharacter.get(c.id!) ?? []).reduce((n, i) => n + (counts.get(i.id!) ?? 0), 0),
+  }));
   withCounts.sort((a, b) => b.apps - a.apps || a.c.name.localeCompare(b.c.name));
-  const slice = withCounts.slice((page - 1) * size, page * size);
-  const items = await Promise.all(slice.map(async ({ c, apps }) => ({ id: c.id!, name: c.name, image_url: c.image_url ?? null, appearances: apps,
-    identities: (await d.identities.where("character_id").equals(c.id!).toArray()).map((i) => i.display_name) })));
+  const items = withCounts.slice((page - 1) * size, page * size).map(({ c, apps }) => ({
+    id: c.id!, name: c.name, image_url: c.image_url ?? null, appearances: apps,
+    identities: (byCharacter.get(c.id!) ?? []).map((i) => i.display_name),
+  }));
   return { items, total: withCounts.length, page, size };
 }
 
@@ -38,50 +70,83 @@ export async function characterDetail(id: Id) {
   const d = db();
   const c = await d.characters.get(id);
   if (!c) return null;
-  const identities = [];
-  for (const ident of (await d.identities.where("character_id").equals(id).toArray()).sort((a, b) => a.id! - b.id!)) {
-    const apps = await d.appearances.where("identity_id").equals(ident.id!).toArray();
-    const dates = ((await d.issues.bulkGet(apps.map((a) => a.issue_id))).filter(Boolean) as Issue[]).map((i) => i.cover_date).filter(Boolean).sort() as string[];
-    const events = [];
-    for (const e of (await d.characterEvents.where("identity_id").equals(ident.id!).toArray()).sort((a, b) => a.kind.localeCompare(b.kind))) {
-      events.push({ id: e.id!, kind: e.kind, note: e.note ?? null, source: e.source,
-        issue: (await issueRef(e.issue_id)) ?? (e.issue_text ? { id: null, label: e.issue_text } : null),
-        end_issue: await issueRef(e.end_issue_id), image_url: e.image_url ?? null });
-    }
-    identities.push({
+  const idents = (await d.identities.where("character_id").equals(id).toArray()).sort((a, b) => a.id! - b.id!);
+  const identIds = idents.map((i) => i.id!);
+
+  /*
+   * This page used to re-query identities three times and then walk appearances, events and
+   * memberships a row at a time, two more gets deep for every issue reference. Each table is
+   * read once here and grouped in memory, which is what makes a character with a long history
+   * open at the same speed as one with a short one.
+   */
+  const [apps, events, affiliations, memberships, orderRows] = await Promise.all([
+    identIds.length ? d.appearances.where("identity_id").anyOf(identIds).toArray() : [],
+    identIds.length ? d.characterEvents.where("identity_id").anyOf(identIds).toArray() : [],
+    identIds.length ? d.teamAffiliations.where("identity_id").anyOf(identIds).toArray() : [],
+    identIds.length ? d.memberships.where("identity_id").anyOf(identIds).toArray() : [],
+    d.readingOrders.where("character_id").equals(id).toArray(),
+  ]);
+
+  const issues = (await d.issues.bulkGet([...new Set(apps.map((a) => a.issue_id))])).filter(Boolean) as Issue[];
+  const issueById = new Map(issues.map((i) => [i.id!, i]));
+  const seriesIds = [...new Set(issues.map((i) => i.series_id))];
+  const uniBySeries = groupBy(seriesIds.length ? await d.seriesUniverses.where("series_id").anyOf(seriesIds).toArray() : [],
+    (su) => su.series_id);
+  const teamById = new Map(((await d.teams.bulkGet([...new Set(affiliations.map((a) => a.team_id))])).filter(Boolean) as Team[])
+    .map((t) => [t.id!, t]));
+
+  const refs = await issueRefs([
+    ...events.flatMap((e) => [e.issue_id, e.end_issue_id]),
+    ...idents.map((i) => i.first_appearance_issue_id),
+    ...memberships.flatMap((m) => [m.from_issue_id, m.to_issue_id]),
+  ]);
+  const ref = (x: Id | null | undefined): IssueRef | null => (x ? refs.get(x) ?? null : null);
+
+  const appsByIdent = groupBy(apps, (a) => a.identity_id);
+  const eventsByIdent = groupBy(events, (e) => e.identity_id);
+  const identities = idents.map((ident) => {
+    const mine = appsByIdent.get(ident.id!) ?? [];
+    const dates = mine.map((a) => issueById.get(a.issue_id)?.cover_date).filter(Boolean).sort() as string[];
+    return {
       id: ident.id!, name: ident.name, display_name: ident.display_name, real_name: ident.real_name ?? null, aliases: ident.aliases ?? [],
-      description: ident.description ?? null, image_url: ident.image_url ?? null, appearances: apps.length,
+      description: ident.description ?? null, image_url: ident.image_url ?? null, appearances: mine.length,
       first_seen: dates[0] ?? null, last_seen: dates[dates.length - 1] ?? null,
-      first_appearance: (await issueRef(ident.first_appearance_issue_id)) ?? (ident.first_appearance_text ? { id: null, label: ident.first_appearance_text } : null),
-      events, metron_id: ident.metron_id ?? null, cv_id: ident.cv_id ?? null,
-    });
-  }
+      first_appearance: ref(ident.first_appearance_issue_id) ?? (ident.first_appearance_text ? { id: null, label: ident.first_appearance_text } : null),
+      events: (eventsByIdent.get(ident.id!) ?? []).sort((a, b) => a.kind.localeCompare(b.kind)).map((e) => ({
+        id: e.id!, kind: e.kind, note: e.note ?? null, source: e.source,
+        issue: ref(e.issue_id) ?? (e.issue_text ? { id: null, label: e.issue_text } : null),
+        end_issue: ref(e.end_issue_id), image_url: e.image_url ?? null,
+      })),
+      metron_id: ident.metron_id ?? null, cv_id: ident.cv_id ?? null,
+    };
+  });
+
+  const identById = new Map(idents.map((i) => [i.id!, i]));
   const teams = [];
-  for (const ident of await d.identities.where("character_id").equals(id).toArray()) {
-    for (const a of await d.teamAffiliations.where("identity_id").equals(ident.id!).toArray()) {
-      const t = await d.teams.get(a.team_id);
-      if (!t) continue;
-      const ms = (await d.memberships.where("team_id").equals(t.id!).toArray()).filter((m) => m.identity_id === ident.id);
-      const froms = (await Promise.all(ms.map((m) => issueRef(m.from_issue_id)))).map((r) => r?.cover_date).filter(Boolean).sort() as string[];
-      const tos = (await Promise.all(ms.map((m) => issueRef(m.to_issue_id)))).map((r) => r?.cover_date).filter(Boolean).sort() as string[];
-      teams.push({ id: t.id!, name: t.name, image_url: t.image_url ?? null, identity: ident.display_name, since: froms[0] ?? null, until: tos[tos.length - 1] ?? null });
-    }
+  for (const a of affiliations) {
+    const t = teamById.get(a.team_id);
+    const ident = identById.get(a.identity_id);
+    if (!t || !ident) continue;
+    const ms = memberships.filter((m) => m.team_id === t.id && m.identity_id === ident.id);
+    const froms = ms.map((m) => ref(m.from_issue_id)?.cover_date).filter(Boolean).sort() as string[];
+    const tos = ms.map((m) => ref(m.to_issue_id)?.cover_date).filter(Boolean).sort() as string[];
+    teams.push({ id: t.id!, name: t.name, image_url: t.image_url ?? null, identity: ident.display_name,
+      since: froms[0] ?? null, until: tos[tos.length - 1] ?? null });
   }
   teams.sort((a, b) => (a.since === null) !== (b.since === null) ? (a.since === null ? 1 : -1) : (a.since ?? "").localeCompare(b.since ?? "") || a.name.localeCompare(b.name));
+
   const uniCounts = new Map<Id, Set<Id>>();
-  for (const ident of await d.identities.where("character_id").equals(id).toArray()) {
-    for (const ap of await d.appearances.where("identity_id").equals(ident.id!).toArray()) {
-      const iss = await d.issues.get(ap.issue_id);
-      if (!iss) continue;
-      for (const su of await d.seriesUniverses.where("series_id").equals(iss.series_id).toArray()) {
-        if (!uniCounts.has(su.universe_id)) uniCounts.set(su.universe_id, new Set());
-        uniCounts.get(su.universe_id)!.add(iss.id!);
-      }
+  for (const ap of apps) {
+    const iss = issueById.get(ap.issue_id);
+    if (!iss) continue;
+    for (const su of uniBySeries.get(iss.series_id) ?? []) {
+      if (!uniCounts.has(su.universe_id)) uniCounts.set(su.universe_id, new Set());
+      uniCounts.get(su.universe_id)!.add(iss.id!);
     }
   }
   const universes = (await d.universes.bulkGet([...uniCounts.keys()])).filter(Boolean)
     .map((u) => ({ id: u!.id!, name: u!.name, issues: uniCounts.get(u!.id!)!.size })).sort((a, b) => b.issues - a.issues);
-  const orders = (await d.readingOrders.where("character_id").equals(id).toArray()).map((o) => ({ id: o.id!, name: o.name }));
+  const orders = orderRows.map((o) => ({ id: o.id!, name: o.name }));
   return { id: c.id!, name: c.name, description: c.description ?? null, image_url: c.image_url ?? null, publisher_id: c.publisher_id ?? null,
     identities, appearances: identities.reduce((n, i) => n + i.appearances, 0), teams, universes, reading_orders: orders };
 }

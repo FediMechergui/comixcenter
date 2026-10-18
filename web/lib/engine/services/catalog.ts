@@ -27,11 +27,18 @@ export async function publisherName(id: Id | null | undefined) {
 }
 
 export async function seriesCard(s: Series) {
-  return {
+  return (await seriesCards([s]))[0];
+}
+
+/** A page of cards, looking each publisher up once rather than once per row. */
+export async function seriesCards(list: Series[]) {
+  const ids = [...new Set(list.map((s) => s.publisher_id).filter(Boolean) as Id[])];
+  const names = new Map((await db().publishers.bulkGet(ids)).filter(Boolean).map((p) => [p!.id!, p!.name]));
+  return list.map((s) => ({
     id: s.id!, name: s.name, volume: s.volume ?? null, year_began: s.year_began ?? null, year_end: s.year_end ?? null,
     issue_count: s.issue_count ?? null, image_url: s.image_url ?? null, series_type: s.series_type ?? null,
-    publisher: await publisherName(s.publisher_id),
-  };
+    publisher: s.publisher_id ? names.get(s.publisher_id) ?? null : null,
+  }));
 }
 
 export async function readIds(ids: Id[]): Promise<Set<Id>> {
@@ -147,7 +154,7 @@ export async function listSeries(f: SeriesFilter) {
   else if (f.sort === "recent") rows.sort((a, b) => (seriesEnd(b) ?? "").localeCompare(seriesEnd(a) ?? "") || a.name.localeCompare(b.name));
   else rows.sort((a, b) => key(a).localeCompare(key(b)) || (a.year_began ?? 0) - (b.year_began ?? 0));
   const slice = rows.slice((page - 1) * size, page * size);
-  return { items: await Promise.all(slice.map(seriesCard)), total: rows.length, page, size };
+  return { items: await seriesCards(slice), total: rows.length, page, size };
 }
 
 async function overlappingEras(s: Series) {

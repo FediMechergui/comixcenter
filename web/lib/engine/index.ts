@@ -5,6 +5,7 @@ import { db } from "./db";
 import { startWorker, onJobFinished } from "./jobs";
 import { configureLibrary } from "./library";
 import { handle, HttpError } from "./router";
+import { loadBundledSnapshot } from "./snapshot";
 import { seedTaxonomy } from "./taxonomy";
 
 let ready: Promise<void> | null = null;
@@ -15,6 +16,8 @@ export function initEngine(): Promise<void> {
     ready = (async () => {
       await db().open();
       await seedTaxonomy();
+      // Seeds the catalog shipped with this build; a no-op once the phone has one of its own.
+      await loadBundledSnapshot();
       configureLibrary();
       startWorker();
     })();
