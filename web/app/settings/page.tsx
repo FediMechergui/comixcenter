@@ -6,6 +6,8 @@ import { isNativeApp } from "@/lib/native";
 import { applyTheme, THEME_KEY, type Theme } from "@/lib/theme";
 import type { Status } from "@/lib/types";
 import { gatewayUrl, gatewayRequest, setGatewayUrl } from "@/lib/gateway";
+import { PersonalBackupControls } from "@/components/personal-backup";
+import Link from "next/link";
 
 interface Creds { metron_token: string | null; metron_username: string | null; metron_password: string | null; comicvine_key: string | null;
   gcd_username: string | null; gcd_password: string | null; metron: boolean; comicvine: boolean; gcd_account: boolean }
@@ -48,6 +50,7 @@ export default function SettingsPage() {
     <>
       <PageHead eyebrow="App" title="Settings" />
       <div className="stack-lg" style={{ maxWidth: 640 }}>
+        {mode === "device" && <PersonalBackupControls />}
         <Section title="Hosted source connection"><form className="stack" onSubmit={async (e) => { e.preventDefault(); setGatewayStatus("Checking connection…"); try { setGatewayUrl(gateway.trim() || null); const status = await gatewayRequest<{ service: string }>("/api/status"); setGatewayStatus(`Connected to ${status.service}`); refresh("/api/online/", "/api/device/"); } catch (error) { setGatewayStatus((error as Error).message); } }}><p className="small muted">Online source requests use this hosted gateway. Your catalog, reading history and imported comics stay on the phone. Metadata credentials are kept on the server; you can also use your own accounts below.</p><label className="label">Gateway address<input className="input" type="url" required value={gateway} onChange={(e) => setGateway(e.target.value)} /></label><div><button className="btn secondary">Save and test</button></div>{gatewayStatus && <p className="small" role="status">{gatewayStatus}</p>}</form></Section>
         {mode === "device" ? <DataSources /> : (
           <Section title="Server">
@@ -118,6 +121,7 @@ export default function SettingsPage() {
             Read imported comics offline, or browse and read supported online sources inside ComixCenter.
           </p>
           {appVersion && <p className="mono" style={{ margin: 0 }}>App version {appVersion}</p>}
+          <Link className="text-link" href="/privacy">Privacy, backups and source information</Link>
         </Section>
       </div>
     </>

@@ -5,7 +5,7 @@ import { Pager } from "@/components/cards";
 import * as I from "@/components/icons";
 import { useNumberParam, useSetParams, useStringParam, withParams } from "@/components/params";
 import { Empty, ErrorBox, Loading, PageHead, plural, ProgressBar, Segmented, useAction, useToast } from "@/components/ui";
-import { api, ApiError, apiUrl, qs, refresh, useApi } from "@/lib/api";
+import { api, ApiError, apiUrl, qs, refresh, useApi, dataMode } from "@/lib/api";
 import { offlineIndex, type OfflineEntry } from "@/lib/offline";
 import type { LibraryFile, Page, Status } from "@/lib/types";
 
@@ -19,6 +19,8 @@ function LibraryPage() {
   const key = `/api/library${qs({ status, page, size: 48, sort: status === "reading" ? "read" : "added" })}`;
   const { data, error, mutate } = useApi<Page<LibraryFile> & { counts: Record<string, number> }>(key, { keepPreviousData: true });
   const server = useApi<Status>("/api/status");
+  const storage = useApi<{ files: number; pages: number; archive_bytes: number }>(dataMode() === "device" ? "/api/device/storage" : null);
+  const cancelImport = useRef(false);
   const { run, busy } = useAction();
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
@@ -28,7 +30,10 @@ function LibraryPage() {
     if (!files?.length) return;
     let ok = 0, matched = 0;
     const failures: string[] = [];
+    cancelImport.current = false;
     for (const [i, f] of Array.from(files).entries()) {
+      if (cancelImport.current) break;
+      if (f.size > 64 * 1024 * 1024) { failures.push(`${f.name}: exceeds the 64 MB import limit`); continue; }
       setUploading(`Importing ${i + 1} of ${files.length}: ${f.name}`);
       const form = new FormData();
       form.append("files", f, f.name);
@@ -42,7 +47,7 @@ function LibraryPage() {
     setUploading(null);
     if (input.current) input.current.value = "";
     toast(failures.length ? `Imported ${ok}; ${failures.length} failed. ${failures[0]}` : `Imported ${plural(ok, "comic")}, ${matched} matched to the catalog`);
-    refresh("/api/library", "/api/status");
+    refresh("/api/library", "/api/status", "/api/device/storage");
   }
 
   return (
@@ -55,7 +60,7 @@ function LibraryPage() {
       </PageHead>
       <div className="stack-lg">
         <div className="row">
-          <input ref={input} type="file" multiple accept={ACCEPT} className="visually-hidden" id="upload" onChange={(e) => upload(e.target.files)} />
+          <input ref={input} type="file" multiple accept={ACCEPT} disabled={!!uploading} className="visually-hidden" id="upload" onChange={(e) => upload(e.target.files)} />
           <label htmlFor="upload" className="btn" aria-disabled={!!uploading}><I.Upload />Import files</label>
           {server.data && server.data.scan_dirs.length > 0 && (
             <button className="btn secondary" disabled={busy}
@@ -65,7 +70,8 @@ function LibraryPage() {
           )}
           <Link href="/opds" className="btn secondary"><I.Link />OPDS servers</Link>
         </div>
-        {uploading && <div className="notice" role="status">{uploading}</div>}
+        {storage.data && <p className="small muted">{storage.data.files} saved comics · {storage.data.pages} offline pages · {(storage.data.archive_bytes / 1024 / 1024).toFixed(1)} MB of original archives. Extracted pages use additional storage. Manage each comic from its details page.</p>}
+        {uploading && <div className="notice" role="status">{uploading}<button className="btn ghost small" onClick={() => { cancelImport.current = true; }}>Stop after this file</button></div>}
 
         <Segmented label="Show" value={status} onChange={(v) => setParams({ status: v === "all" ? null : v, page: null })} options={[
           { value: "all", label: `All${data ? ` ${data.counts.all}` : ""}` }, { value: "reading", label: "Reading" },

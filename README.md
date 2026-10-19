@@ -1,5 +1,9 @@
 # ComixCenter
 
+The 0.3 preview adds one-step Android source reading, remembered source positions, personal
+backup/restore, four daily navigation tabs and next-stop guidance. See the
+[release notes](docs/releases/v0.3.0.md) and [remaining 1.0 gates](docs/road-to-1.0.md).
+
 Reading orders, story arcs, characters and teams across comics universes, plus a reader for the
 comics you import and supported online sources. Catalog data comes from Metron, Comic Vine and
 the Grand Comics Database. Batcave is the primary online discovery and reading source.
@@ -94,6 +98,20 @@ local credential file, but exports catalog tables only. When `ADMIN_TOKEN` is co
 library uploads, scans, edits, deletion and OPDS changes also require that token.
 
 ## Tests
+
+Validate Android changes on the emulator as well as running automated tests:
+
+```powershell
+python scripts/android-smoke.py --label candidate
+python scripts/android-reading-smoke.py
+python scripts/android-lifecycle-smoke.py
+```
+
+Install the candidate APK first. The first script starts the test AVD if necessary; the next
+two use it and create generated comic fixtures. Screenshots and measured reports are saved
+in `scratch/android-validation/`. Reading tests temporarily disable emulator networking;
+lifecycle tests temporarily change rotation and throttle WebView requests, restoring settings
+afterward. These are emulator checks, not physical-device acceptance.
 
 ```bash
 cd backend && python -m pytest

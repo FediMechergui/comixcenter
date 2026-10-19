@@ -275,6 +275,7 @@ export async function requeueInterrupted(): Promise<number> {
 
 // ── Worker: one loop per lane while the app is open ──
 let started = false;
+let generation = 0;
 const wakers = new Set<() => void>();
 const busy = new Map<string, number | null>();
 
@@ -287,15 +288,20 @@ export function workerStatus() {
 export function startWorker() {
   if (started) return;
   started = true;
+  const currentGeneration = ++generation;
   requeueInterrupted().finally(() => {
-    for (const l of ["local", "metron", "comicvine", "gcd"]) laneLoop(l);
+    if (started && generation === currentGeneration) for (const l of ["local", "metron", "comicvine", "gcd"]) laneLoop(l, currentGeneration);
   });
 }
 
-async function laneLoop(laneName: string) {
-  while (started) {
+async function laneLoop(laneName: string, currentGeneration: number) {
+  while (started && generation === currentGeneration) {
     let job: Job | undefined;
     try { job = await claim(laneName); } catch { job = undefined; }
+    if (!started || generation !== currentGeneration) {
+      if (job) await db().jobs.update(job.id!, { status: "queued" });
+      return;
+    }
     if (!job) {
       await new Promise<void>((resolve) => {
         const t = setTimeout(done, 5000);
@@ -309,4 +315,4 @@ async function laneLoop(laneName: string) {
   }
 }
 
-export function stopWorker() { started = false; wake(); }
+export function stopWorker() { started = false; generation++; wake(); }

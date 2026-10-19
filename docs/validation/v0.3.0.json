@@ -1,0 +1,83 @@
+{
+  "version": "0.3.0",
+  "automated_tests": 186,
+  "android": {
+    "label": "final-0.3.0",
+    "device": "sdk_gphone64_x86_64",
+    "measurements": {
+      "launch_to_discover_ms": 2992,
+      "launch_to_online_rows_ms": 5787,
+      "02-library_ready_ms": 1083,
+      "03-guides_ready_ms": 367,
+      "04-settings_ready_ms": 250
+    },
+    "failures": [],
+    "navigation_timing": {
+      "dom_content_loaded_ms": 684,
+      "load_ms": 841
+    },
+    "gateway": [
+      {
+        "ms": 1456,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 129,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 92,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      }
+    ]
+  },
+  "reading": {
+    "measurements": {
+      "read_to_source_view_ms": 16909,
+      "read_to_first_image_ms": 30251,
+      "three_page_import_ms": 1886,
+      "offline_reader_image_ms": 698
+    },
+    "checks": {
+      "source_has_no_native_bridge": true,
+      "history_page_3": true,
+      "source_page_restored": true,
+      "offline_image_loaded": true,
+      "backup_written": {
+        "format": "comixcenter-personal-backup",
+        "series": 208,
+        "library": 4,
+        "hasAccounts": false
+      },
+      "backup_restored_via_ui": true
+    },
+    "failures": []
+  },
+  "lifecycle": {
+    "checks": {
+      "background_keeps_page_2": true,
+      "rotation_keeps_page_2": true,
+      "process_restart_keeps_page_2": true
+    },
+    "measurements": {
+      "throttled_gateway": {
+        "ms": 1764,
+        "status": 200,
+        "entries": 20
+      }
+    },
+    "failures": []
+  },
+  "notes": [
+    "Preview, not physical-phone acceptance.",
+    "Startup includes emulator/ADB and DevTools overhead. Route readiness is DOM readiness; screenshots were reviewed.",
+    "Earlier successful source first-image run: 4529 ms; final run: 30251 ms. Source and emulator timings vary.",
+    "Exploratory harness failures and readiness false positives were corrected before final assertions and screenshot review."
+  ]
+}

@@ -5,6 +5,7 @@ import { Cover } from "./cards";
 import { ErrorBox, Loading, Segmented } from "./ui";
 import { qs, useApi, dataMode } from "@/lib/api";
 import { FeedEntry } from "./feed";
+import { SourceReader } from "./source-reader";
 import type { OpdsFeedPage } from "@/lib/types";
 import * as I from "./icons";
 
@@ -18,6 +19,7 @@ export function OnlineCatalog({ initialQuery = "", number }: { initialQuery?: st
   return <section className="section" id="latest" aria-label="Online comic sources">
     <div className="between"><div><span className="eyebrow">Read inside ComixCenter</span><h2 className="h2">{query ? "Find your next read" : "Explore online comics"}</h2></div><span className="source-label"><span />{result.data?.title || "Checking available sources"}</span></div>
     <Segmented label="Comic source" value={source} onChange={(v) => { setSource(v); setPage(1); }} options={[{ value: "auto", label: "Automatic" }, { value: "batcave", label: "Batcave" }, { value: "getcomics", label: "GetComics" }]} />
+    <SourceReader url="https://batcave.biz/" title="Batcave comics" label="Browse Batcave inside the app" />
     <form className="catalog-search" onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(text.trim()); }}>
       <I.Search /><label className="visually-hidden" htmlFor="source-search">Search Batcave</label>
       <input id="source-search" value={text} onChange={(e) => setText(e.target.value)} placeholder="Search a comic, character or series…" maxLength={150} />

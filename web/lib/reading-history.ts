@@ -2,7 +2,7 @@
 import { useSyncExternalStore } from "react";
 
 const KEY = "comix.reading-history.v1";
-export interface ReadingSession { url: string; title: string; chapter: string; chapterTitle: string; page: number; updated: string }
+export interface ReadingSession { url: string; title: string; chapter: string; chapterTitle: string; page: number; updated: string; reader?: "source" | "app"; resumeUrl?: string; sourcePage?: string; scroll?: number }
 let cached: ReadingSession[] = [];
 let raw: string | null = null;
 const empty: ReadingSession[] = [];

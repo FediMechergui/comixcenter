@@ -9,6 +9,7 @@ import type { Chapter, Chapters, ChapterPages } from "@/lib/engine/sources/batca
 import { readingSession, saveReadingSession } from "@/lib/reading-history";
 import "./online-reader.css";
 import { SourceReader } from "@/components/source-reader";
+import { isNativeApp } from "@/lib/native";
 
 let inFlight = 0;
 const waiting: (() => void)[] = [];
@@ -151,6 +152,9 @@ function OnlineBook({ comic, title, startAt, number }: { comic: string; title: s
 }
 
 function ReadOnline() {
+  const [native, setNative] = useState<boolean | null>(null);
+  const [pageReader, setPageReader] = useState(false);
+  useEffect(() => setNative(isNativeApp()), []);
   const url = useStringParam("url");
   const slug = useStringParam("slug");
   const startAt = useStringParam("chapter");
@@ -158,6 +162,8 @@ function ReadOnline() {
   const title = useStringParam("title") || "Read online";
   const comic = url || (slug ? `https://readcomicsonline.ru/comic/${slug}` : null);
   if (!comic) return <Empty title="Choose a comic to read" action={<Link className="btn" href="/">Discover comics</Link>}>Browse a source or open a reading guide.</Empty>;
+  if (native === null) return <Loading lines={3} />;
+  if (native && !pageReader) return <div className="chapter-picker"><Link className="text-link" href="/"><I.ChevronL />Discover</Link><span className="eyebrow">Your reading session</span><h1 className="title">{title}</h1><SourceReader key={comic} url={comic} title={title} autoOpen /><button className="btn ghost" onClick={() => setPageReader(true)}>Use ComixCenter page reader</button><p className="small muted">Imported comics are always available in your offline library.</p><Link className="text-link" href="/library">My library<I.ChevronR /></Link></div>;
   return <OnlineBook key={comic} comic={comic} title={title} startAt={startAt} number={number} />;
 }
 export default withParams(ReadOnline);

@@ -292,6 +292,10 @@ route("GET", "/api/teams/:id", async (_r, m) => found(await chars.teamDetail(+m[
 route("GET", "/api/teams/:id/issues", ({ query: q }, m) => chars.teamIssues(+m[1], num(q.get("page")) ?? 1, num(q.get("size")) ?? 60));
 
 // ── Library ──
+route("GET", "/api/device/storage", async () => {
+  const files = await db().libraryFiles.toArray();
+  return { files: files.length, archive_bytes: files.reduce((sum, f) => sum + f.size, 0), pages: files.reduce((sum, f) => sum + f.page_count, 0) };
+});
 const libFile = async (id: number) => found(await db().libraryFiles.get(id), "File not found");
 route("GET", "/api/library", ({ query: q }) => listLibrary({ q: q.get("q"), status: q.get("status") ?? "all", sort: q.get("sort") ?? "added",
   page: num(q.get("page")) ?? 1, size: num(q.get("size")) ?? 60 }));

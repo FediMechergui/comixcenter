@@ -7,13 +7,13 @@ import { ToastProvider } from "@/components/ui";
 
 const TABS = [
   { href: "/", label: "Discover", icon: I.Home, match: ["/"] },
-  { href: "/browse", label: "Browse", icon: I.Browse, match: ["/browse", "/publisher", "/universe", "/series", "/issue", "/arcs", "/arc", "/creator"] },
-  { href: "/guides", label: "Reading paths", icon: I.Path, match: ["/guides", "/guide", "/orders", "/order"] },
   { href: "/library", label: "Library", icon: I.Library, match: ["/library", "/file", "/opds"] },
+  { href: "/guides", label: "Reading paths", icon: I.Path, match: ["/guides", "/guide", "/orders", "/order"] },
   { href: "/search", label: "Search", icon: I.Search, match: ["/search"] },
 ];
 
 const RAIL_EXTRA = [
+  { href: "/browse", label: "Browse catalog", icon: I.Browse, match: ["/browse", "/publisher", "/universe", "/series", "/issue", "/creator"] },
   { href: "/orders", label: "My reading orders", icon: I.Path, match: ["/orders", "/order"] },
   { href: "/arcs", label: "Arcs & events", icon: I.Spark, match: ["/arcs", "/arc"] },
   { href: "/characters", label: "Characters", icon: I.Users, match: ["/characters", "/character"] },

@@ -29,7 +29,9 @@ function score(tokens: string[], recordWords: string[], title: string): number {
 }
 
 export async function search(q: string, kinds?: string[] | null, limit = 30) {
-  const tokens = words(q).slice(0, 12);
+  const yearText = /\b(?:19|20)\d{2}\b/.exec(q)?.[0];
+  const year = yearText ? Number(yearText) : null;
+  const tokens = words(yearText ? q.replace(yearText, "") : q).slice(0, 12);
   if (!tokens.length) return { query: q, results: [] };
   const wanted = new Set<Kind>(((kinds?.length ? kinds : KINDS) as Kind[]).filter((k) => (KINDS as readonly string[]).includes(k)));
   const d = db();
@@ -37,7 +39,7 @@ export async function search(q: string, kinds?: string[] | null, limit = 30) {
   const seenCharacters = new Set<Id>();
 
   if (wanted.has("series")) for (const s of await d.series.bulkGet(await matchIds(d.series, tokens))) {
-    if (!s) continue;
+    if (!s || (year && s.year_began !== year)) continue;
     const pub = s.publisher_id ? await d.publishers.get(s.publisher_id) : undefined;
     hits.push({ kind: "series", id: s.id!, title: s.name, image_url: s.image_url ?? null, score: score(tokens, s.words, s.name) + 0.5,
       subtitle: [s.year_began, pub?.name, s.issue_count ? `${s.issue_count} issues` : null].filter(Boolean).join(" · ") });
@@ -45,9 +47,10 @@ export async function search(q: string, kinds?: string[] | null, limit = 30) {
   if (wanted.has("issue")) for (const i of await d.issues.bulkGet(await matchIds(d.issues, tokens, 120))) {
     if (!i) continue;
     const s = await d.series.get(i.series_id);
+    if (year && s?.year_began !== year && i.cover_date?.slice(0,4) !== String(year)) continue;
     const title = `${s?.name ?? ""} #${i.number}`;
     hits.push({ kind: "issue", id: i.id!, title, image_url: i.image_url ?? null, score: score(tokens, i.words, title),
-      subtitle: [i.title, i.cover_date?.slice(0, 4)].filter(Boolean).join(" · ") });
+      subtitle: [s?.year_began ? `${s.year_began} series` : null, i.title, i.cover_date?.slice(0, 4)].filter(Boolean).join(" · ") });
   }
   if (wanted.has("arc")) for (const a of await d.arcs.bulkGet(await matchIds(d.arcs, tokens))) {
     if (a) hits.push({ kind: "arc", id: a.id!, title: a.name, subtitle: a.kind === "event" ? "Event" : "Story arc", image_url: a.image_url ?? null,

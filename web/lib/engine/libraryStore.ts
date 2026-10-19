@@ -25,6 +25,7 @@ export type ImportProgress = (done: number, total: number) => void;
 
 /** Adds a comic to the library and matches it to the catalog. Returns [file, created]. */
 export async function importComic(bytes: Uint8Array, originalName: string, progress?: ImportProgress, opdsFeedId?: Id | null): Promise<[LibraryFile, boolean]> {
+  if (bytes.byteLength > 64 * 1024 * 1024) throw new ImportError("Import one archive up to 64 MB at a time to keep the phone responsive.");
   const d = db();
   const digest = await sha256(bytes);
   const existing = await d.libraryFiles.where("sha256").equals(digest).first();
@@ -58,6 +59,11 @@ export async function importComic(bytes: Uint8Array, originalName: string, progr
     file.id = await d.libraryFiles.add(file);
     insertedId = file.id;
     await applyMatch(file);
+    const recovered = (await d.settings.get("recovered-library-progress"))?.value;
+    if (Array.isArray(recovered)) {
+      const saved = recovered.find((f) => f.sha256 === digest);
+      if (saved) await d.libraryFiles.update(file.id, { current_page: Math.min(Math.max(0, saved.current_page), source.pageCount - 1), finished_at: saved.finished_at, last_read_at: saved.last_read_at });
+    }
     return [(await d.libraryFiles.get(file.id))!, true];
   } catch (e) {
     if (insertedId != null) await d.libraryFiles.delete(insertedId);

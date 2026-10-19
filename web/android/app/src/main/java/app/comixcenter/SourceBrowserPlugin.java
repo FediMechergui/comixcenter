@@ -6,6 +6,9 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.ActivityCallback;
+import androidx.activity.result.ActivityResult;
+import com.getcapacitor.JSObject;
 
 @CapacitorPlugin(name = "SourceBrowser")
 public class SourceBrowserPlugin extends Plugin {
@@ -26,8 +29,24 @@ public class SourceBrowserPlugin extends Plugin {
         getActivity().runOnUiThread(() -> {
             Intent intent = new Intent(getContext(), SourceBrowserActivity.class);
             intent.putExtra("url", url);
-            getActivity().startActivity(intent);
-            call.resolve();
+            intent.putExtra("resumeUrl", call.getString("resumeUrl"));
+            intent.putExtra("resumePage", call.getString("resumePage", ""));
+            intent.putExtra("resumeScroll", call.getInt("resumeScroll", 0));
+            intent.putExtra("resumeUpdated", call.getString("resumeUpdated", "0"));
+            startActivityForResult(call, intent, "sourceClosed");
         });
+    }
+
+    @ActivityCallback
+    private void sourceClosed(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        JSObject saved = new JSObject();
+        Intent data = result.getData();
+        if (data != null && allowed(data.getStringExtra("url"))) {
+            saved.put("url", data.getStringExtra("url"));
+            saved.put("page", data.getStringExtra("page"));
+            saved.put("scroll", data.getIntExtra("scroll", 0));
+        }
+        call.resolve(saved);
     }
 }
