@@ -1,0 +1,137 @@
+{
+  "version": "0.4.1",
+  "android_api": 35,
+  "webview": "124.0.6367.219",
+  "automated_tests": {
+    "passed": 207,
+    "files": 22
+  },
+  "main_first": {
+    "label": "final-0.4.1",
+    "device": "sdk_gphone64_x86_64",
+    "measurements": {
+      "launch_to_discover_ms": 19852,
+      "launch_to_online_rows_ms": 25059,
+      "02-library_ready_ms": 2525,
+      "03-guides_ready_ms": 2168,
+      "04-settings_ready_ms": 1526
+    },
+    "failures": [],
+    "navigation_timing": {
+      "dom_content_loaded_ms": 3247,
+      "load_ms": 3925
+    },
+    "gateway": [
+      {
+        "ms": 1729,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 112,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 109,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      }
+    ]
+  },
+  "main_repeat": {
+    "label": "final-0.4.1-recheck",
+    "device": "sdk_gphone64_x86_64",
+    "measurements": {
+      "launch_to_discover_ms": 14611,
+      "launch_to_online_rows_ms": 20610,
+      "02-library_ready_ms": 1675,
+      "03-guides_ready_ms": 2688,
+      "04-settings_ready_ms": 400
+    },
+    "failures": [],
+    "navigation_timing": {
+      "dom_content_loaded_ms": 3285,
+      "load_ms": 3849
+    },
+    "gateway": [
+      {
+        "ms": 237,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 212,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 243,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      }
+    ]
+  },
+  "sources": {
+    "checks": {
+      "live_catalog_persisted": true,
+      "offline_saved_listings_visible": true,
+      "characters_opens_requested_section": true,
+      "characters_has_no_native_bridge": true,
+      "events_opens_requested_section": true,
+      "events_has_no_native_bridge": true,
+      "guides_opens_requested_section": true,
+      "guides_has_no_native_bridge": true
+    },
+    "measurements": {
+      "offline_saved_listings_ms": 5836,
+      "characters_document_ready_ms": 20246,
+      "events_document_ready_ms": 8076,
+      "guides_document_ready_ms": 6286
+    },
+    "source_availability": {
+      "Characters": {
+        "title": "Comic Book Characters A\u2013Z \u2014 Marvel, DC & More | BatCave",
+        "has_bridge": false,
+        "heading": "Comic Book Characters",
+        "body_present": true
+      },
+      "Events": {
+        "title": "Comic Events: Full Crossover Reading Orders",
+        "has_bridge": false,
+        "heading": "Comic Events",
+        "body_present": true
+      },
+      "Guides": {
+        "title": "Top Community Guides | Batcave",
+        "has_bridge": false,
+        "heading": "Top community guides",
+        "body_present": true
+      }
+    },
+    "failures": []
+  },
+  "direct_public_http_status": 403,
+  "configured_secret_scan": {
+    "values": 3,
+    "matches": 0
+  },
+  "builds": {
+    "production_export": "passed",
+    "signed_release": "passed",
+    "version_code": 7
+  },
+  "limitations": [
+    "Not full-site data ingestion",
+    "Headings ready does not imply all source assets loaded",
+    "Slower launch than preceding release; causes not isolated",
+    "Physical phone and current WebView still pending"
+  ],
+  "exploratory_source_harness_failure": "Initial empty document captured too early; Close readiness not awaited. Corrected and rerun successfully."
+}

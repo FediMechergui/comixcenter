@@ -1,8 +1,8 @@
 # ComixCenter
 
-The 0.4 preview adds download progress, cancellation, explicit retry and recovery after an
-interrupted transfer, alongside in-app reading and personal backup/restore. See the
-[release notes](docs/releases/v0.4.0.md) and [remaining 1.0 gates](docs/road-to-1.0.md).
+The 0.4.1 preview adds Batcave character/event/guide shortcuts and saved source listings,
+alongside download progress, cancellation, recovery and personal backup/restore. See the
+[release notes](docs/releases/v0.4.1.md) and [remaining 1.0 gates](docs/road-to-1.0.md).
 
 Reading orders, story arcs, characters and teams across comics universes, plus a reader for the
 comics you import and supported online sources. Catalog data comes from Metron, Comic Vine and
@@ -103,6 +103,7 @@ Validate Android changes on the emulator as well as running automated tests:
 
 ```powershell
 python scripts/android-smoke.py --label candidate
+python scripts/android-source-catalog-smoke.py --label sources-candidate
 python scripts/android-download-smoke.py --label downloads-candidate
 python scripts/android-reading-smoke.py --label reading-candidate
 python scripts/android-lifecycle-smoke.py --label lifecycle-candidate

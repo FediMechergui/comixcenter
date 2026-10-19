@@ -1,14 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { onlineCatalog } from "./catalog";
 import { withDeadline } from "./http";
+import { rememberCatalog } from "./catalog-cache";
 
 const mocks = vi.hoisted(() => ({ batcave: vi.fn(), getcomics: vi.fn(), gateway: vi.fn() }));
 vi.mock("./batcave", () => ({ batcaveCatalog: mocks.batcave }));
 vi.mock("./getcomics", () => ({ GETCOMICS_SCHEME: "getcomics://", fetchGetComicsOpds: mocks.getcomics }));
 vi.mock("@/lib/gateway", () => ({ gatewayUrl: () => "https://gateway.test", gatewayRequest: mocks.gateway }));
-afterEach(() => { vi.useRealTimers(); vi.resetAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.resetAllMocks(); vi.restoreAllMocks(); localStorage.clear(); });
 
 describe("phone-only source discovery", () => {
+  it("returns an explicitly marked saved page when every source fails", async () => {
+    rememberCatalog(JSON.stringify(["batcave", "Batman", 1]), { title: "Batcave", source: "batcave", entries: [{ title: "Saved" }], next: null, previous: null, up: null, url: "https://batcave.biz/" } as never);
+    mocks.gateway.mockRejectedValue(new Error("blocked")); mocks.batcave.mockRejectedValue(new Error("blocked"));
+    expect(await onlineCatalog("Batman", 1, "batcave")).toMatchObject({ cached_at: expect.any(String), entries: [{ title: "Saved" }] });
+    expect(mocks.getcomics).not.toHaveBeenCalled();
+  });
   it("uses a working hosted source without waiting for a stuck native bridge", async () => {
     mocks.batcave.mockReturnValue(new Promise(() => {}));
     mocks.getcomics.mockRejectedValue(new Error("blocked"));

@@ -77,7 +77,7 @@ public class ComicDownloadPlugin extends Plugin {
                 connection = (HttpURLConnection) url.openConnection(); transfer.connection = connection;
                 connection.setConnectTimeout(10000); connection.setReadTimeout(10000);
                 connection.setInstanceFollowRedirects(false);
-                connection.setRequestProperty("User-Agent", "ComixCenter/0.4.0");
+                connection.setRequestProperty("User-Agent", "ComixCenter/0.4.1");
                 connection.setRequestProperty("Accept-Encoding", "identity");
                 if (!authorization.isEmpty()) connection.setRequestProperty("Authorization", authorization);
                 int status = connection.getResponseCode();

@@ -8,18 +8,25 @@ import { FeedEntry } from "./feed";
 import { SourceReader } from "./source-reader";
 import type { OpdsFeedPage } from "@/lib/types";
 import * as I from "./icons";
+import { isNativeApp } from "@/lib/native";
 
 export function OnlineCatalog({ initialQuery = "", number }: { initialQuery?: string; number?: string | null }) {
   const [text, setText] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
   const [page, setPage] = useState(1);
   const [source, setSource] = useState("auto");
+  const [batcaveSection, setBatcaveSection] = useState("/");
+  const [native, setNative] = useState(false);
+  useEffect(() => setNative(isNativeApp()), []);
+  const batcaveSections = [{ path: "/", title: "All comics" }, { path: "/characters/", title: "Characters" }, { path: "/event/", title: "Events and reading orders" }, { path: "/folder/", title: "Community guides" }];
   useEffect(() => { setText(initialQuery); setQuery(initialQuery); setPage(1); }, [initialQuery]);
   const result = useApi<OpdsFeedPage>(`/api/online/catalog${qs({ q: query, page, source })}`, { shouldRetryOnError: false, dedupingInterval: 300_000 });
   return <section className="section" id="latest" aria-label="Online comic sources">
     <div className="between"><div><span className="eyebrow">Read inside ComixCenter</span><h2 className="h2">{query ? "Find your next read" : "Explore online comics"}</h2></div><span className="source-label"><span />{result.data?.title || "Checking available sources"}</span></div>
     <Segmented label="Comic source" value={source} onChange={(v) => { setSource(v); setPage(1); }} options={[{ value: "auto", label: "Automatic" }, { value: "batcave", label: "Batcave" }, { value: "getcomics", label: "GetComics" }]} />
-    <SourceReader url="https://batcave.biz/" title="Batcave comics" label="Browse Batcave inside the app" />
+    {native && <div className="stack"><label className="label">Explore Batcave<select className="input" value={batcaveSection} onChange={(e) => setBatcaveSection(e.target.value)}>{batcaveSections.map((s) => <option key={s.path} value={s.path}>{s.title}</option>)}</select></label>
+      <SourceReader url={`https://batcave.biz${batcaveSection}`} title={`Batcave: ${batcaveSections.find((s) => s.path === batcaveSection)?.title}`} label="Open selected section in app" />
+    </div>}
     <form className="catalog-search" onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(text.trim()); }}>
       <I.Search /><label className="visually-hidden" htmlFor="source-search">Search Batcave</label>
       <input id="source-search" value={text} onChange={(e) => setText(e.target.value)} placeholder="Search a comic, character or series…" maxLength={150} />
@@ -28,6 +35,7 @@ export function OnlineCatalog({ initialQuery = "", number }: { initialQuery?: st
     </form>
     {result.isLoading && <><p className="small muted" role="status">Checking sources. You can switch sources or use your bundled catalog while this loads.</p><Loading lines={3} /></>}
     {result.error && <div className="source-error"><ErrorBox error={result.error} retry={() => result.mutate()} /><div className="row"><button className="btn secondary small" onClick={() => { setSource(source === "getcomics" ? "batcave" : "getcomics"); setPage(1); }}>Try {source === "getcomics" ? "Batcave" : "GetComics"}</button><Link className="text-link" href="/browse">Open bundled catalog<I.ChevronR /></Link><Link className="text-link" href="/settings">Connection settings<I.ChevronR /></Link></div></div>}
+    {result.data?.cached_at && <div className="notice" role="status"><p className="small">Showing saved listings from {new Date(result.data.cached_at).toLocaleString()}. The source is unavailable; covers and reading still need a connection.</p><button className="btn secondary small" disabled={result.isValidating} onClick={() => void result.mutate()}>Check source again</button></div>}
     {result.data && result.data.entries.length === 0 && <p className="muted">No comics found. Try a shorter title or leave out the year.</p>}
     {result.data?.source === "getcomics" ? <div className="list">{result.data.entries.map((entry) => dataMode() === "device" ? <FeedEntry entry={entry} feedId={-1} key={entry.title} /> : <div className="list-row" key={entry.title}><strong>{entry.title}</strong>{entry.reader_url && <Link className="btn small" href={`/read-online${qs({ url: entry.reader_url, title: entry.title, number })}`}>Read</Link>}</div>)}</div> : result.data && <div className="discovery-grid">{result.data.entries.map((entry) => <Link className="discovery-book" key={entry.reader_url || entry.title}
       href={`/read-online${qs({ url: entry.reader_url, title: entry.title, number })}`}>

@@ -17,7 +17,11 @@ The release promise: find a starting point, read inside the app, and always know
 - Emulator checks cover oversized responses, broken/stalled connections, verification pages and credential stripping on redirects.
 - Import cancellation rolls back extracted pages and library records; imports and backup restore cannot overlap.
 
+## 0.4.1 source exploration
+- Native Batcave character/event/guide entry points and a bounded seven-day saved-listing fallback. This is source navigation, not complete source-data ingestion.
+
 ## Remaining 1.0 gates
+- Investigate the slower emulator launch samples recorded in the 0.4.1 report before claiming performance gains.
 - Physical phone acceptance, including current Android System WebView.
 - Larger/solid archives, memory pressure and broader rotation, background and upgrade regression checks. Direct downloads currently stop at 64 MB; retry starts over and requires the app process to stay alive. OS background downloading and byte-range resume are not implemented.
 - Review provider permissions, attribution and gateway quotas before wider distribution.

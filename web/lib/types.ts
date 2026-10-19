@@ -197,4 +197,4 @@ export interface OpdsEntry {
   reader_url?: string | null;
 }
 
-export interface OpdsFeedPage { title: string; entries: OpdsEntry[]; next: string | null; previous: string | null; up: string | null; url: string; source?: "batcave" | "getcomics" }
+export interface OpdsFeedPage { cached_at?: string; title: string; entries: OpdsEntry[]; next: string | null; previous: string | null; up: string | null; url: string; source?: "batcave" | "getcomics" }
