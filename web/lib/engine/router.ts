@@ -9,6 +9,8 @@ import { comicvineConfigured, gcdAccountConfigured, getComicVine, getCredentials
 import { base64Utf8 } from "./sources/http";
 import { isRcoPage, rcoChapters, rcoFind, rcoPageBytes, rcoPages, rcoSlug } from "./sources/rco";
 import { batcaveCatalog, batcaveChapters, batcavePages, batcaveImage, isBatcave } from "./sources/batcave";
+import { onlineCatalog, type CatalogSource } from "./sources/catalog";
+import { gatewayUrl, gatewayRequest } from "@/lib/gateway";
 import { GCD_API } from "./sources/gcd";
 import { db, nowIso, type Id, type Tier } from "./db";
 import { enqueue, onJobFinished, P_DERIVE, P_USER, runJob, workerStatus } from "./jobs";
@@ -164,7 +166,7 @@ route("POST", "/api/online/add", async ({ body }) => {
 
 // ── Reading online ──
 // The reader runs in the app: these answer with image URLs, never with a page to open elsewhere.
-route("GET", "/api/online/catalog", ({ query }) => batcaveCatalog(query.get("q") || "", Math.max(1, num(query.get("page")) || 1)));
+route("GET", "/api/online/catalog", ({ query }) => onlineCatalog(query.get("q") || "", Math.max(1, num(query.get("page")) || 1), (query.get("source") || "auto") as CatalogSource));
 route("GET", "/api/online/read/find", async ({ query }) => {
   const series = query.get("series");
   if (!series) throw new HttpError(422, "Need a series to look for");
@@ -174,12 +176,14 @@ route("GET", "/api/online/read/find", async ({ query }) => {
 });
 route("GET", "/api/online/read/chapters", async ({ query }) => {
   if (isBatcave(query.get("url") || "")) return batcaveChapters(query.get("url")!);
+  if (gatewayUrl() && rcoSlug(query.get("url"))) return gatewayRequest(`/api/online/read/chapters?${new URLSearchParams({ url: query.get("url")!, start: query.get("start") || "1" })}`);
   const slug = rcoSlug(query.get("url")) ?? query.get("slug");
   if (!slug) throw new HttpError(422, "No readable link for this book");
   return { slug, url: query.get("url") || `https://readcomicsonline.ru/comic/${slug}`, source: "rco", chapters: (await rcoChapters(slug)).map((c) => ({ id: c, title: `Issue ${c}`, number: c })) };
 });
 route("GET", "/api/online/read/pages", async ({ query }) => {
   if (isBatcave(query.get("url") || "")) return batcavePages(query.get("url")!, query.get("chapter") || "");
+  if (gatewayUrl() && rcoSlug(query.get("url"))) return gatewayRequest(`/api/online/read/pages?${new URLSearchParams({ url: query.get("url")!, chapter: query.get("chapter") || "" })}`, 15_000);
   const slug = rcoSlug(query.get("url")) ?? query.get("slug");
   const chapter = query.get("chapter");
   if (!slug || !chapter) throw new HttpError(422, "Need a comic and a chapter to read");
@@ -192,6 +196,7 @@ route("GET", "/api/online/read/page", async ({ query }) => {
   const url = query.get("url") ?? "";
   if (/^https:\/\/img\.batcave\.biz\//i.test(url)) return batcaveImage(url);
   if (!isRcoPage(url)) throw new HttpError(422, "That is not a readable page");
+  if (gatewayUrl()) return gatewayRequest(`/api/online/read/page?url=${encodeURIComponent(url)}`);
   try { return await rcoPageBytes(url); }
   catch (e) { throw new HttpError(502, (e as Error).message); }
 });

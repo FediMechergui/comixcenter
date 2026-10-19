@@ -20,7 +20,7 @@ export function initEngine(): Promise<void> {
       await loadBundledSnapshot();
       configureLibrary();
       startWorker();
-    })();
+    })().catch((error) => { ready = null; throw error; });
   }
   return ready;
 }

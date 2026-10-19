@@ -122,19 +122,28 @@ function OnlineBook({ comic, title, startAt, number }: { comic: string; title: s
   const [startPage, setStartPage] = useState(0);
   const [initialized, setInitialized] = useState(false);
   const [filter, setFilter] = useState("");
+  const [moreChapters, setMoreChapters] = useState<Chapter[]>([]);
+  const [nextStart, setNextStart] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [moreError, setMoreError] = useState<unknown>(null);
+  const allChapters = [...(result.data?.chapters || []), ...moreChapters];
+  useEffect(() => { if (result.data) setNextStart(result.data.next_start || null); }, [result.data]);
   useEffect(() => {
     if (!result.data || initialized) return;
     setInitialized(true);
     const saved = readingSession(comic);
-    const target = startAt || (number ? result.data.chapters.find((c) => c.number === number)?.id : saved?.chapter);
+    const linkedNumber = /\/comic\/[^/]+\/([\d.]+)\/?$/.exec(new URL(comic).pathname)?.[1];
+    const wantedNumber = number || linkedNumber;
+    const target = startAt || (wantedNumber ? result.data.chapters.find((c) => c.number === wantedNumber)?.id : saved?.chapter);
     if (target && result.data.chapters.some((c) => c.id === target)) { setChapter(target); setStartPage(saved?.chapter === target ? saved.page : 0); }
   }, [result.data, initialized, comic, startAt, number]);
   function pick(id: string) { setStartPage(0); setChapter(id); window.scrollTo(0, 0); }
-  if (chapter && result.data) return <ChapterReader key={chapter} comic={comic} title={title} chapter={chapter} chapters={result.data.chapters} startPage={startPage} onChapter={pick} onBack={() => setChapter(null)} />;
+  if (chapter && result.data) return <ChapterReader key={chapter} comic={comic} title={title} chapter={chapter} chapters={allChapters} startPage={startPage} onChapter={pick} onBack={() => setChapter(null)} />;
   return <div className="chapter-picker"><Link className="text-link" href="/"><I.ChevronL />Discover</Link><span className="eyebrow">Read online / {result.data?.source || "Batcave"}</span><h1 className="title">{title}</h1><p className="muted">Choose an issue. Your place is saved as you read.</p>
     {result.error && <ErrorBox error={result.error} retry={() => result.mutate()} />}{result.isLoading && <Loading lines={5} />}
     {result.data && <><div className="between"><span className="mono">{result.data.chapters.length} issues</span><label className="visually-hidden" htmlFor="chapter-filter">Find an issue</label><input className="input guide-search" id="chapter-filter" placeholder="Find an issue number" value={filter} onChange={(e) => setFilter(e.target.value)} /></div>
-      <div className="chapter-grid">{result.data.chapters.filter((c) => c.title.toLowerCase().includes(filter.toLowerCase())).map((c) => <button onClick={() => pick(c.id)} key={c.id}><span className="mono">Issue</span><strong>{c.number}</strong><span>{c.title}</span><I.ChevronR /></button>)}</div></>}
+      <div className="chapter-grid">{allChapters.filter((c) => c.title.toLowerCase().includes(filter.toLowerCase())).map((c) => <button onClick={() => pick(c.id)} key={c.id}><span className="mono">Issue</span><strong>{c.number}</strong><span>{c.title}</span><I.ChevronR /></button>)}</div>
+      {nextStart && <button className="btn secondary" disabled={loadingMore} onClick={async () => { setLoadingMore(true); setMoreError(null); try { const data = await api.get<Chapters>(`/api/online/read/chapters${qs({ url: comic, start: nextStart })}`); setMoreChapters((rows) => [...rows, ...data.chapters.filter((c) => !allChapters.some((a) => a.id === c.id))]); setNextStart(data.next_start || null); } catch (e) { setMoreError(e); } finally { setLoadingMore(false); } }}>{loadingMore ? "Checking the next issues…" : "Load more issues"}</button>}{moreError && <ErrorBox error={moreError} />}</>}
   </div>;
 }
 

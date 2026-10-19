@@ -5,6 +5,7 @@ import { adminToken, api, dataMode, defaultServer, refresh, serverUrl, setAdminT
 import { isNativeApp } from "@/lib/native";
 import { applyTheme, THEME_KEY, type Theme } from "@/lib/theme";
 import type { Status } from "@/lib/types";
+import { gatewayUrl, gatewayRequest, setGatewayUrl } from "@/lib/gateway";
 
 interface Creds { metron_token: string | null; metron_username: string | null; metron_password: string | null; comicvine_key: string | null;
   gcd_username: string | null; gcd_password: string | null; metron: boolean; comicvine: boolean; gcd_account: boolean }
@@ -19,10 +20,13 @@ export default function SettingsPage() {
   const [lan, setLan] = useState<string[]>([]);
   const [native, setNative] = useState(false);
   const [appVersion, setAppVersion] = useState<string | null>(null);
+  const [gateway, setGateway] = useState("");
+  const [gatewayStatus, setGatewayStatus] = useState("");
   useEffect(() => {
     const isNative = isNativeApp();
     setNative(isNative);
     setMode(dataMode());
+    setGateway(gatewayUrl() || "");
     if (isNative) import("@capacitor/app").then(({ App }) => App.getInfo()).then((i) => setAppVersion(`${i.version} (${i.build})`)).catch(() => {});
     else if (dataMode() === "server") api.get<Status>("/api/status").then((s) => setLan(s.lan_urls ?? [])).catch(() => {});
     setServer(serverUrl());
@@ -44,6 +48,7 @@ export default function SettingsPage() {
     <>
       <PageHead eyebrow="App" title="Settings" />
       <div className="stack-lg" style={{ maxWidth: 640 }}>
+        <Section title="Hosted source connection"><form className="stack" onSubmit={async (e) => { e.preventDefault(); setGatewayStatus("Checking connection…"); try { setGatewayUrl(gateway.trim() || null); const status = await gatewayRequest<{ service: string }>("/api/status"); setGatewayStatus(`Connected to ${status.service}`); refresh("/api/online/", "/api/device/"); } catch (error) { setGatewayStatus((error as Error).message); } }}><p className="small muted">Online source requests use this hosted gateway. Your catalog, reading history and imported comics stay on the phone. Metadata credentials are kept on the server; you can also use your own accounts below.</p><label className="label">Gateway address<input className="input" type="url" required value={gateway} onChange={(e) => setGateway(e.target.value)} /></label><div><button className="btn secondary">Save and test</button></div>{gatewayStatus && <p className="small" role="status">{gatewayStatus}</p>}</form></Section>
         {mode === "device" ? <DataSources /> : (
           <Section title="Server">
             <form className="stack" onSubmit={(e) => { e.preventDefault(); setServerUrl(server === defaultServer() ? null : server); toast("Server address saved"); testServer(); }}>

@@ -1,10 +1,12 @@
 /** Batcave uses native HTTP where available, with the desktop browser session as a fallback. */
-import { adminToken, serverUrl } from "@/lib/api";
+import { adminToken, configuredServerUrl } from "@/lib/api";
+import { withDeadline } from "./http";
+import { gatewayUrl, gatewayRequest } from "@/lib/gateway";
 import { transport } from "../clients";
 import type { OpdsFeedPage } from "@/lib/types";
 
 export interface Chapter { id: string; title: string; number: string }
-export interface Chapters { url: string; chapters: Chapter[]; source: string }
+export interface Chapters { url: string; chapters: Chapter[]; source: string; next_start?: number | null }
 export interface ChapterPages { url: string; chapter: string; pages: string[]; chapters: Chapter[]; source: string }
 const ORIGIN = "https://batcave.biz";
 const imageRefs = new Map<string, string>();
@@ -16,11 +18,14 @@ export function isBatcave(url: string) {
 function checked(url: string) { if (!isBatcave(url)) throw new Error("Choose a Batcave comic to read"); return url; }
 
 async function gateway<T>(path: string): Promise<T> {
+  const server = configuredServerUrl();
+  if (!server && gatewayUrl()) return gatewayRequest<T>(path);
+  if (!server) throw new Error("Batcave blocked the direct connection. Try GetComics below, or set up a computer in Settings → Batcave browser connection.");
   const token = adminToken();
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 100_000);
+  const timer = setTimeout(() => controller.abort(), 20_000);
   try {
-    const response = await fetch(`${serverUrl()}${path}`, { headers: token ? { "X-Admin-Token": token } : {}, signal: controller.signal });
+    const response = await fetch(`${server}${path}`, { headers: token ? { "X-Admin-Token": token } : {}, signal: controller.signal });
     if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.detail || `Batcave gateway answered ${response.status}`); }
     return await response.json();
   } catch (e) {
@@ -33,7 +38,7 @@ async function documentAt(url: string): Promise<Document> {
   const cached = cache.get(url);
   let html = cached && cached.expires > Date.now() ? cached.html : "";
   if (!html) {
-    const r = await transport()({ url, responseType: "text", timeoutMs: 20_000 });
+    const r = await withDeadline(transport()({ url, responseType: "text", timeoutMs: 8_000 }), 8_000);
     if (r.status >= 400 || typeof r.data !== "string" || /<title>\s*Just a moment/i.test(r.data)) throw new Error("Batcave needs a browser session");
     html = r.data;
     if (cache.size > 40) cache.delete(cache.keys().next().value!);
@@ -90,9 +95,10 @@ export async function batcaveCatalog(q = "", page = 1): Promise<OpdsFeedPage> {
     const url = q ? `${ORIGIN}/index.php?${new URLSearchParams({ do: "search", subaction: "search", story: q, search_start: String(page) })}` : `${ORIGIN}/${page > 1 ? `page/${page}/` : ""}`;
     const doc = await documentAt(url);
     const entries = parseBatcaveCatalog(doc);
+    if (!q && !entries.length) throw new Error("Batcave returned no readable catalog");
     const more = !!doc.querySelector('a[rel="next"], .pagination__next a, a.pagination__next') || [...doc.querySelectorAll(".pagination a, .navigation a, .pagination__pages a")].some((a) => a.textContent?.trim() === String(page + 1));
     return { title: "Batcave", entries, next: more ? String(page + 1) : null, previous: page > 1 ? String(page - 1) : null, up: null, url };
-  } catch { return gateway(`/api/online/catalog?${new URLSearchParams({ q, page: String(page) })}`); }
+  } catch { return gateway(`/api/online/catalog?${new URLSearchParams({ q, page: String(page), source: "batcave" })}`); }
 }
 
 export async function batcaveChapters(url: string): Promise<Chapters> {

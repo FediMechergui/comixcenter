@@ -77,9 +77,15 @@ export async function loadBundledSnapshot(): Promise<Record<string, number> | nu
   if (typeof fetch !== "function") return null;
   if ((await db().series.count()) > 0) return null;
   try {
-    const resp = await fetch(SNAPSHOT_URL, { cache: "no-store" });
-    if (!resp.ok) return null;
-    return await importSnapshot((await resp.json()) as Snapshot);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8_000);
+    let snapshot: Snapshot;
+    try {
+      const resp = await fetch(SNAPSHOT_URL, { cache: "no-store", signal: controller.signal });
+      if (!resp.ok) return null;
+      snapshot = await resp.json() as Snapshot;
+    } finally { clearTimeout(timer); }
+    return await importSnapshot(snapshot);
   } catch {
     return null;
   }

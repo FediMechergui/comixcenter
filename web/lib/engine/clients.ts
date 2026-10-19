@@ -8,12 +8,15 @@ import type { ComicVineApi } from "./sync/comicvine";
 import type { GcdApi } from "./sync/gcd";
 import type { MetronApi } from "./sync/metron";
 import * as sources from "./sources";
+import { gatewayUrl, gatewayRequest } from "@/lib/gateway";
 
 export class NotConfiguredError extends Error {
   constructor(message: string) { super(message); this.name = "NotConfiguredError"; }
 }
 
 export interface Credentials {
+  hosted_metron?: boolean;
+  hosted_comicvine?: boolean;
   metron_token?: string | null;
   metron_username?: string | null;
   metron_password?: string | null;
@@ -23,6 +26,7 @@ export interface Credentials {
 }
 
 const CRED_KEY = "credentials";
+type CredentialKey = Exclude<keyof Credentials, "hosted_metron" | "hosted_comicvine">;
 
 /** Distributed builds contain catalog data, never shared account passwords or API keys. */
 export const BUILT_IN_CREDENTIALS: Credentials = {};
@@ -41,23 +45,38 @@ export async function getCredentials(): Promise<Credentials> {
   const saved = await getSavedCredentials();
   const merged: Credentials = { ...saved };
   // A saved Metron token or username replaces the whole built-in Metron sign-in, and likewise for GCD
-  const groups: (keyof Credentials)[][] = [["gcd_username", "gcd_password"], ["comicvine_key"], ["metron_token", "metron_username", "metron_password"]];
+  const groups: CredentialKey[][] = [["gcd_username", "gcd_password"], ["comicvine_key"], ["metron_token", "metron_username", "metron_password"]];
   for (const keys of groups) {
     if (keys.some((k) => saved[k])) continue;
     for (const k of keys) if (builtIn[k]) merged[k] = builtIn[k];
   }
+  const url = gatewayUrl();
+  if (url) {
+    if (!hostedState || hostedState.url !== url || hostedState.expires < Date.now()) {
+      if (!hostedPromise) hostedPromise = gatewayRequest<{ metadata?: { metron?: boolean; comicvine?: boolean } }>("/api/status", 1500)
+        .then((s) => { hostedState = { url, expires: Date.now() + 120_000, metron: !!s.metadata?.metron, comicvine: !!s.metadata?.comicvine }; })
+        .catch(() => { hostedState = { url, expires: Date.now() + 10_000, metron: false, comicvine: false }; })
+        .finally(() => { hostedPromise = null; });
+      await hostedPromise;
+    }
+    merged.hosted_metron = hostedState?.metron || false;
+    merged.hosted_comicvine = hostedState?.comicvine || false;
+  }
   return merged;
 }
 
+let hostedState: { url: string; expires: number; metron: boolean; comicvine: boolean } | null = null;
+let hostedPromise: Promise<void> | null = null;
+
 export async function saveCredentials(creds: Credentials): Promise<void> {
   const clean: Credentials = {};
-  for (const [k, v] of Object.entries(creds)) if (typeof v === "string" && v.trim()) clean[k as keyof Credentials] = v.trim();
+  for (const [k, v] of Object.entries(creds)) if (typeof v === "string" && v.trim()) clean[k as CredentialKey] = v.trim();
   await db().settings.put({ key: CRED_KEY, value: clean });
   reset();
 }
 
-export function metronConfigured(c: Credentials) { return !!(c.metron_token || (c.metron_username && c.metron_password)); }
-export function comicvineConfigured(c: Credentials) { return !!c.comicvine_key; }
+export function metronConfigured(c: Credentials) { return !!(c.metron_token || (c.metron_username && c.metron_password) || c.hosted_metron); }
+export function comicvineConfigured(c: Credentials) { return !!(c.comicvine_key || c.hosted_comicvine); }
 export function gcdAccountConfigured(c: Credentials) { return !!(c.gcd_username && c.gcd_password); }
 
 /** HTTP responses cached in IndexedDB (keyed by URL, never including credentials). */
@@ -88,10 +107,27 @@ export function transport(): HttpFn {
 
 export function reset() { metron = comicvine = gcd = null; }
 
+/** Never send device account headers to the hosted gateway; it uses its own server credentials. */
+function hostedMetadata(source: "metron" | "comicvine" | "gcd"): HttpFn {
+  return async (request) => {
+    const url = new URL(request.url);
+    const resource = url.pathname.replace(/^\/api\//, "");
+    const query = new URLSearchParams(url.search);
+    for (const [key, value] of Object.entries(request.params || {})) if (value !== undefined) query.set(key, String(value));
+    query.delete("api_key");
+    const data = await gatewayRequest(`/api/upstream/${source}/${resource}?${query}`, 12_000);
+    return { status: 200, headers: {}, data };
+  };
+}
+
 export async function getMetron(): Promise<MetronApi> {
   if (metron) return metron;
   const c = await getCredentials();
-  if (!metronConfigured(c)) throw new NotConfiguredError("Add your Metron account in Settings to use Metron.");
+  if (!(c.metron_token || (c.metron_username && c.metron_password))) {
+    if (!c.hosted_metron) throw new NotConfiguredError("Add your Metron account in Settings, or check the hosted gateway connection.");
+    metron = sources.createMetronClient({ http: hostedMetadata("metron"), auth: { token: "gateway-managed" }, cache: idbCache }) as unknown as MetronApi;
+    return metron;
+  }
   const auth = c.metron_token ? { token: c.metron_token } : { username: c.metron_username!, password: c.metron_password! };
   metron = sources.createMetronClient({ http: transport(), auth, cache: idbCache }) as unknown as MetronApi;
   return metron;
@@ -100,7 +136,11 @@ export async function getMetron(): Promise<MetronApi> {
 export async function getComicVine(): Promise<ComicVineApi> {
   if (comicvine) return comicvine;
   const c = await getCredentials();
-  if (!comicvineConfigured(c)) throw new NotConfiguredError("Add your Comic Vine API key in Settings to use Comic Vine.");
+  if (!c.comicvine_key) {
+    if (!c.hosted_comicvine) throw new NotConfiguredError("Add your Comic Vine API key in Settings, or check the hosted gateway connection.");
+    comicvine = sources.createComicVineClient({ http: hostedMetadata("comicvine"), apiKey: "gateway-managed", cache: idbCache }) as unknown as ComicVineApi;
+    return comicvine;
+  }
   comicvine = sources.createComicVineClient({ http: transport(), apiKey: c.comicvine_key!, cache: idbCache }) as unknown as ComicVineApi;
   return comicvine;
 }

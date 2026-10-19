@@ -14,18 +14,22 @@ The online reader has page/scroll modes, chapter selection, keyboard controls, f
 next-issue navigation and device-local reading position. Character pages include optional
 story milestones with spoiler controls.
 
-## Batcave connection
+## Hosted sources and Batcave connection
 
-Run `start-server.bat` on a computer with Chrome or Edge installed. Open the server address
+Android uses https://comixcenter-gateway.vercel.app for online discovery without a PC.
+Automatic discovery selects a responding source, including GetComics. The gateway keeps metadata
+credentials on the server. Protected sources may still reject cloud requests; the app shows
+a bounded error with retry and source selection. See [gateway setup](gateway/README.md).
+
+For the optional desktop Batcave browser session, run `start-server.bat` on a computer with Chrome or Edge installed. Open the server address
 in a browser to use the full web app. Batcave's protected requests run through a dedicated
 normal browser profile; metadata and covers are cached. Comics stay inside ComixCenter's
 reader. If Batcave asks for a human verification, complete it in the source browser window
 and retry. The app does not copy browser cookies into an unrelated HTTP client.
 
 In the Android app, Settings > Batcave browser connection accepts the computer's LAN address
-while keeping the catalog on the phone. Native source requests are attempted first; protected
-requests use that computer's browser session. The computer must remain running for those
-requests. Existing GetComics OPDS and device RCO support remain available.
+while keeping the catalog on the phone. An explicitly configured computer handles protected Batcave requests through its browser session. The computer must remain running for those
+requests. GetComics discovery also works through the hosted gateway.
 
 ```
 backend/comix/     FastAPI app, SQLite (+ FTS5 search), Metron/Comic Vine sync workers, library + reader API
@@ -78,10 +82,9 @@ cd android && gradlew assembleDebug    # app/build/outputs/apk/debug/app-debug.a
 
 Android defaults to its own IndexedDB catalog and native file storage, seeded from the bundled
 catalog snapshot. Browser mode defaults to the FastAPI server catalog. They are separate catalogs.
-On the emulator, `http://10.0.2.2:8000` reaches your computer. On a phone, set the computer's
-LAN address in Settings and start it with `start-server.bat`.
+On the emulator, `http://10.0.2.2:8000` reaches your computer. A phone can use hosted discovery independently; a desktop browser connection is optional.
 
-API accounts belong in the device's Settings or `backend/.env`. Distributed application builds
+API accounts belong in Vercel server environment variables, the device's Settings or `backend/.env`. Distributed application builds
 no longer embed `NEXT_PUBLIC_*` account credentials. The snapshot builder can still read the
 local credential file, but exports catalog tables only. When `ADMIN_TOKEN` is configured,
 library uploads, scans, edits, deletion and OPDS changes also require that token.

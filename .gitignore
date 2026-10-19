@@ -34,5 +34,7 @@ web/android/build/
 web/public/wasm/
 web/public/pdf.worker.min.mjs
 
-# Local env files (may hold API credentials baked into app builds)
+# Local environment files can contain provider credentials
 .env*.local
+.vercel/
+.env*

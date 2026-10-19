@@ -41,6 +41,10 @@ export function serverUrl(): string {
 }
 
 export function setServerUrl(url: string | null) { writeStore(SERVER_KEY, url ? url.trim() : null); }
+/** A phone gateway must be explicitly configured; the emulator address is not a real phone's PC. */
+export function configuredServerUrl(): string | null {
+  return typeof window === "undefined" ? null : readStore(SERVER_KEY)?.replace(/\/+$/, "") || null;
+}
 
 /**
  * Where the catalog lives. The Android app runs everything on the phone ("device") and calls

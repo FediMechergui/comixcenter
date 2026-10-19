@@ -14,6 +14,16 @@ export const USER_AGENT = "ComixCenter/0.1 (personal comic reader app)";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+/** Native bridges can fail to settle even after their own socket timeout. Bound the JS wait too. */
+export async function withDeadline<T>(operation: Promise<T>, ms: number, message = "The source took too long. Try another source."): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([operation, new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => reject(new NetworkError(message)), ms);
+    })]);
+  } finally { if (timer !== undefined) clearTimeout(timer); }
+}
+
 /** The request never got an HTTP answer (offline, DNS, TLS, timeout). */
 export class NetworkError extends Error {
   constructor(message: string, public cause?: unknown) { super(message); this.name = "NetworkError"; }
@@ -75,14 +85,14 @@ export function createNativeHttp(): HttpFn {
     const timeout = req.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     let res;
     try {
-      res = await CapacitorHttp.request({
+      res = await withDeadline(CapacitorHttp.request({
         url,
         method: req.method ?? "GET",
         headers: req.headers ?? {},
         responseType,
         connectTimeout: timeout,
         readTimeout: timeout,
-      });
+      }), timeout);
     } catch (err) {
       throw new NetworkError(`${req.method ?? "GET"} ${url} failed: ${(err as Error)?.message ?? err}`, err);
     }

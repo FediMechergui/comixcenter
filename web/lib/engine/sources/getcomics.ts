@@ -4,6 +4,7 @@
  * server) and every post is turned into a publication entry.
  */
 import { transport } from "../clients";
+import { withDeadline } from "./http";
 import type { OpdsAcquisition, OpdsEntry, OpdsFeed } from "../library/opds";
 
 export const GETCOMICS_SCHEME = "getcomics://";
@@ -128,17 +129,19 @@ function pageOf(url: string): number {
 
 export async function fetchGetComicsOpds(url: string): Promise<OpdsFeed & { url: string }> {
   const page = pageOf(url);
-  const res = await transport()({
+  const query = new URLSearchParams(url.split("?")[1] || "").get("q");
+  const res = await withDeadline(transport()({
     url: API,
-    params: { page, per_page: PER_PAGE, _embed: 1 },
+    params: { page, per_page: PER_PAGE, _embed: 1, ...(query ? { search: query } : {}) },
     responseType: "json",
-    timeoutMs: 30_000,
+    timeoutMs: 12_000,
     headers: HEADERS,
-  });
+  }), 12_000, "GetComics did not answer within 12 seconds. Check your connection or choose another source.");
 
   // Past the last page WordPress answers 400 rest_post_invalid_page_number instead of an empty list.
   const exhausted = res.status === 400 && page > 1;
   if (res.status >= 400 && !exhausted) throw new Error(`GetComics answered ${res.status}`);
+  if (!exhausted && !Array.isArray(res.data)) throw new Error("GetComics returned a verification page instead of its catalog. Try another source.");
 
   const posts: unknown[] = !exhausted && Array.isArray(res.data) ? res.data : [];
   const entries = posts.map(toEntry).filter((e): e is OpdsEntry => e !== null);
@@ -147,8 +150,8 @@ export async function fetchGetComicsOpds(url: string): Promise<OpdsFeed & { url:
     title: GETCOMICS_FEED.name,
     url,
     entries,
-    next: posts.length < PER_PAGE ? null : `${GETCOMICS_SCHEME}latest?page=${page + 1}`,
-    previous: page > 1 ? `${GETCOMICS_SCHEME}latest?page=${page - 1}` : null,
+    next: posts.length < PER_PAGE ? null : `${GETCOMICS_SCHEME}latest?page=${page + 1}${query ? `&q=${encodeURIComponent(query)}` : ""}`,
+    previous: page > 1 ? `${GETCOMICS_SCHEME}latest?page=${page - 1}${query ? `&q=${encodeURIComponent(query)}` : ""}` : null,
     up: null,
   };
 }

@@ -1,5 +1,7 @@
 """The same reading endpoints used by device and server clients."""
 from fastapi import APIRouter, HTTPException, Query, Response
+import httpx
+import os
 from comix.services.online import online_reader
 
 router = APIRouter(prefix="/api/online", tags=["online reader"])
@@ -15,8 +17,20 @@ async def result(operation):
 
 
 @router.get("/catalog")
-async def catalog(q: str = Query(default="", max_length=150), page: int = Query(default=1, ge=1, le=1000)):
-    return await result(online_reader.catalog(q, page))
+async def catalog(q: str = Query(default="", max_length=150), page: int = Query(default=1, ge=1, le=1000), source: str = "auto"):
+    if source == "batcave":
+        return await result(online_reader.catalog(q, page))
+    if source not in ("auto", "getcomics"):
+        raise HTTPException(422, "Choose auto, batcave or getcomics")
+    try:
+        gateway = os.getenv("COMIX_GATEWAY_URL", "https://comixcenter-gateway.vercel.app").rstrip("/")
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.get(gateway + "/api/online/catalog", params={"q": q, "page": page, "source": source})
+        if not response.is_success:
+            raise HTTPException(response.status_code, "Online sources are unavailable. Try another source.")
+        return response.json()
+    except httpx.HTTPError:
+        raise HTTPException(504, "The source gateway did not answer. Your local catalog is still available.") from None
 
 
 @router.get("/read/chapters")

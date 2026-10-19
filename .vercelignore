@@ -1,0 +1,16 @@
+.git
+.vscode
+.vercel
+backend
+web
+scripts
+docs
+scratch
+.env*
+README.md
+start-server.bat
+gateway/.env*
+gateway/.vercel/**
+gateway/__pycache__/**
+gateway/.pytest_cache/**
+gateway/tests/**
