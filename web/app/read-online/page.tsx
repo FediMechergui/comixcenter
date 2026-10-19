@@ -8,6 +8,7 @@ import { api, qs, useApi } from "@/lib/api";
 import type { Chapter, Chapters, ChapterPages } from "@/lib/engine/sources/batcave";
 import { readingSession, saveReadingSession } from "@/lib/reading-history";
 import "./online-reader.css";
+import { SourceReader } from "@/components/source-reader";
 
 let inFlight = 0;
 const waiting: (() => void)[] = [];
@@ -100,6 +101,7 @@ function ChapterReader({ comic, title, chapter, chapters, startPage, onChapter, 
       <select aria-label="Chapter" value={chapter} onChange={(e) => onChapter(e.target.value)}>{chapters.map((c) => <option value={c.id} key={c.id}>{c.number}</option>)}</select>
       <button onClick={() => { const next = mode === "single" ? "scroll" : "single"; scrollResumed.current = true; setMode(next); if (next === "scroll") requestAnimationFrame(() => document.getElementById(`online-page-${current}`)?.scrollIntoView()); else window.scrollTo(0, 0); try { localStorage.setItem("comix.online-mode", next); } catch { /* session preference */ } }} aria-label={`Switch to ${mode === "single" ? "scroll" : "page"} mode`}>{mode === "single" ? "Scroll" : "Pages"}</button><button onClick={fullscreen} aria-label="Toggle fullscreen"><I.Expand /></button>
     </header>
+    <div className="online-reader-message"><SourceReader url={comic} /></div>
     {data.error && <div className="online-reader-message"><ErrorBox error={data.error} retry={() => data.mutate()} /></div>}
     {data.isLoading && <div className="online-reader-message"><Loading lines={5} /><p>Opening the chapter…</p></div>}
     {total > 0 && <>
@@ -140,6 +142,7 @@ function OnlineBook({ comic, title, startAt, number }: { comic: string; title: s
   function pick(id: string) { setStartPage(0); setChapter(id); window.scrollTo(0, 0); }
   if (chapter && result.data) return <ChapterReader key={chapter} comic={comic} title={title} chapter={chapter} chapters={allChapters} startPage={startPage} onChapter={pick} onBack={() => setChapter(null)} />;
   return <div className="chapter-picker"><Link className="text-link" href="/"><I.ChevronL />Discover</Link><span className="eyebrow">Read online / {result.data?.source || "Batcave"}</span><h1 className="title">{title}</h1><p className="muted">Choose an issue. Your place is saved as you read.</p>
+    <SourceReader url={comic} />
     {result.error && <ErrorBox error={result.error} retry={() => result.mutate()} />}{result.isLoading && <Loading lines={5} />}
     {result.data && <><div className="between"><span className="mono">{result.data.chapters.length} issues</span><label className="visually-hidden" htmlFor="chapter-filter">Find an issue</label><input className="input guide-search" id="chapter-filter" placeholder="Find an issue number" value={filter} onChange={(e) => setFilter(e.target.value)} /></div>
       <div className="chapter-grid">{allChapters.filter((c) => c.title.toLowerCase().includes(filter.toLowerCase())).map((c) => <button onClick={() => pick(c.id)} key={c.id}><span className="mono">Issue</span><strong>{c.number}</strong><span>{c.title}</span><I.ChevronR /></button>)}</div>

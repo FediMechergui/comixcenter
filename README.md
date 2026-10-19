@@ -14,6 +14,10 @@ The online reader has page/scroll modes, chapter selection, keyboard controls, f
 next-issue navigation and device-local reading position. Character pages include optional
 story milestones with spoiler controls.
 
+On Android, **Open source reader in app** displays supported source websites in a separate
+in-app browser. Verification and reading stay on the phone, with Close returning to ComixCenter.
+A source may still reject embedded browsers. This mode does not send source cookies to Vercel.
+
 ## Hosted sources and Batcave connection
 
 Android uses https://comixcenter-gateway.vercel.app for online discovery without a PC.

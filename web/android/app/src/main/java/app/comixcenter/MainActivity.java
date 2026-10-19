@@ -17,6 +17,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(SourceBrowserPlugin.class);
         super.onCreate(savedInstanceState);
         bridge.setWebViewClient(new RouteAwareWebViewClient(bridge));
     }

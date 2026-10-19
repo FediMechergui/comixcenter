@@ -37,3 +37,6 @@
 .chapter-grid button > strong { font: 500 2rem Georgia, serif; }.chapter-grid button > span:last-of-type { font-size: .7rem; color: var(--ink-2); }
 .chapter-grid button > svg { position: absolute; right: 14px; top: 18px; width: 16px; color: var(--cyan-ink); }
 @media (max-width: 600px) { .online-toolbar { gap: 7px; padding-left: 10px; padding-right: 10px; } .online-toolbar button { padding: 8px; font-size: .75rem; } .online-reader-title > span { display: none; } .online-toolbar select { max-width: 75px; } .online-controls { padding-left: 10px; padding-right: 10px; gap: 8px; } .online-controls button > span { display: none; } .online-page-range { width: min(500px, 75%); gap: 8px; } .chapter-picker { padding-left: 18px; padding-right: 18px; } }
+
+.source-reader-option { margin: 12px 0; }
+.source-reader-option p { margin: 8px 0; max-width: 58ch; }
