@@ -2,6 +2,7 @@
 import { db, type Issue, type Series } from "./db";
 import { SNAPSHOT_TABLES, type Snapshot, exportSnapshot } from "./snapshot";
 import { startWorker, stopWorker, workerStatus } from "./jobs";
+import { withLibraryMaintenance } from "./libraryStore";
 
 export const BACKUP_FORMAT = "comixcenter-personal-backup";
 interface SavedFile { sha256: string; name: string; current_page: number; issue_id?: number | null; finished_at?: string | null; last_read_at?: string | null }
@@ -56,6 +57,9 @@ function issueKey(issue: Issue, series: Series | undefined) {
 
 /** Called only after the UI previews replacement. All catalog changes roll back on any failure. */
 export async function restorePersonalBackup(value: unknown) {
+  return withLibraryMaintenance(() => restoreBackup(value));
+}
+async function restoreBackup(value: unknown) {
   const b = validateBackup(value), d = db();
   const worker = workerStatus();
   if (worker.current.length) throw new Error("A catalog sync is still running. Wait for it to finish before restoring.");

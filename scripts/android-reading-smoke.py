@@ -1,5 +1,6 @@
 """End-to-end source resume, local import, offline reader and backup UI checks."""
 import asyncio
+import argparse
 import base64
 import io
 import json
@@ -17,7 +18,8 @@ CDPConnection = base["CDPConnection"]
 
 
 async def main():
-    folder = Path("scratch/android-validation/reading-0.3.0")
+    parser = argparse.ArgumentParser(); parser.add_argument("--label", default="reading-current"); parser.add_argument("--skip-source", action="store_true"); args = parser.parse_args()
+    folder = Path("scratch/android-validation") / args.label
     folder.mkdir(parents=True, exist_ok=True)
     report = {"measurements": {}, "checks": {}, "failures": []}
     adb("shell", "am", "force-stop", "app.comixcenter")
@@ -64,7 +66,7 @@ async def main():
 
     try:
         await wait('location.origin === "http://localhost" && !!document.body && document.body.innerText.includes("Explore online comics")', timeout=45)
-        if "--skip-source" not in __import__("sys").argv:
+        if not args.skip_source:
             comic = "https://batcave.biz/reader/33459/239119"
             start = time.monotonic()
             await evaluate(app, "location.href=" + json.dumps("/read-online?" + urllib.parse.urlencode({"url":comic,"title":"Adventure Time validation"})))

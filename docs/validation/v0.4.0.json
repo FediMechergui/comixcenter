@@ -1,0 +1,131 @@
+{
+  "main": {
+    "label": "final-0.4.0-recheck",
+    "device": "sdk_gphone64_x86_64",
+    "measurements": {
+      "launch_to_discover_ms": 3061,
+      "launch_to_online_rows_ms": 5328,
+      "02-library_ready_ms": 304,
+      "03-guides_ready_ms": 373,
+      "04-settings_ready_ms": 292
+    },
+    "failures": [],
+    "navigation_timing": {
+      "dom_content_loaded_ms": 480,
+      "load_ms": 812
+    },
+    "gateway": [
+      {
+        "ms": 77,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 83,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      },
+      {
+        "ms": 77,
+        "status": 200,
+        "entries": 20,
+        "source": "getcomics"
+      }
+    ]
+  },
+  "downloads": {
+    "checks": {
+      "partial_file_existed_before_cancel": true,
+      "progress_survives_client_navigation": true,
+      "cancel_removes_partial_file": true,
+      "retry_imported_comic": true,
+      "QA oversized header": true,
+      "QA oversized stream": true,
+      "QA verification page": true,
+      "QA broken connection": true,
+      "QA stalled connection": true,
+      "source_authentication_sent": true,
+      "redirect_drops_authentication": true,
+      "process_death_marks_interrupted_and_cleans_cache": true,
+      "interrupted_transfer_can_retry": true,
+      "retry_restarts_without_range": true
+    },
+    "measurements": {
+      "cancel_to_clean_ms": 249,
+      "retry_to_saved_ms": 2731,
+      "stalled_source_to_failure_ms": 12559
+    },
+    "failures": [],
+    "fixture_bytes": 4447813
+  },
+  "reading": {
+    "measurements": {
+      "three_page_import_ms": 774,
+      "offline_reader_image_ms": 773
+    },
+    "checks": {
+      "offline_image_loaded": true,
+      "backup_written": {
+        "format": "comixcenter-personal-backup",
+        "series": 208,
+        "library": 12,
+        "hasAccounts": false
+      },
+      "backup_restored_via_ui": true
+    },
+    "failures": []
+  },
+  "version": "0.4.0",
+  "android_api": 35,
+  "webview": "124.0.6367.219",
+  "automated_tests": {
+    "passed": 202,
+    "files": 21
+  },
+  "builds": {
+    "production_export": "passed",
+    "signed_android_release": "passed",
+    "version_code": 6
+  },
+  "apk_configured_secret_scan": {
+    "values_scanned": 3,
+    "matches": 0
+  },
+  "limitations": [
+    "Physical phone/current WebView acceptance pending",
+    "Direct files limited to 64 MB; keep app process alive; retry restarts",
+    "Generated loopback fixture timings do not measure internet comic downloads",
+    "Source browser unchanged; external protected source behavior not revalidated in this pass"
+  ],
+  "exploratory_runs": [
+    {
+      "label": "downloads-0.4.0-release",
+      "issue": "Harness waited for older job hidden by collapsed history; corrected selector"
+    },
+    {
+      "label": "downloads-0.4.0-reviewed",
+      "issue": "Harness submitted before controlled form was ready; waits for loaded feed list and separate input updates"
+    },
+    {
+      "label": "downloads-0.4.0-accepted",
+      "issue": "Slow run: retry 17371 ms, cancellation 1348 ms; unknown-length oversized transfer exceeded 40-second harness wait. Extended harness to 150 seconds to observe native 120-second deadline. Final full rerun passed."
+    }
+  ],
+  "lifecycle": {
+    "checks": {
+      "background_keeps_page_2": true,
+      "rotation_keeps_page_2": true,
+      "process_restart_keeps_page_2": true
+    },
+    "measurements": {
+      "throttled_gateway": {
+        "ms": 1791,
+        "status": 200,
+        "entries": 20
+      }
+    },
+    "failures": []
+  }
+}

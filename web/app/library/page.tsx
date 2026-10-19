@@ -8,6 +8,8 @@ import { Empty, ErrorBox, Loading, PageHead, plural, ProgressBar, Segmented, use
 import { api, ApiError, apiUrl, qs, refresh, useApi, dataMode } from "@/lib/api";
 import { offlineIndex, type OfflineEntry } from "@/lib/offline";
 import type { LibraryFile, Page, Status } from "@/lib/types";
+import { DownloadsPanel } from "@/components/downloads";
+import { isDownloading, useDownloads } from "@/lib/downloads";
 
 type Status_ = "all" | "reading" | "unmatched" | "finished";
 const ACCEPT = ".cbz,.cbr,.cb7,.pdf,.epub,.zip,.rar,.7z";
@@ -21,6 +23,7 @@ function LibraryPage() {
   const server = useApi<Status>("/api/status");
   const storage = useApi<{ files: number; pages: number; archive_bytes: number }>(dataMode() === "device" ? "/api/device/storage" : null);
   const cancelImport = useRef(false);
+  const downloading = useDownloads().some(isDownloading);
   const { run, busy } = useAction();
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
@@ -59,8 +62,9 @@ function LibraryPage() {
         </p>
       </PageHead>
       <div className="stack-lg">
+        {dataMode() === "device" && <DownloadsPanel />}
         <div className="row">
-          <input ref={input} type="file" multiple accept={ACCEPT} disabled={!!uploading} className="visually-hidden" id="upload" onChange={(e) => upload(e.target.files)} />
+          <input ref={input} type="file" multiple accept={ACCEPT} disabled={!!uploading || downloading} className="visually-hidden" id="upload" onChange={(e) => upload(e.target.files)} />
           <label htmlFor="upload" className="btn" aria-disabled={!!uploading}><I.Upload />Import files</label>
           {server.data && server.data.scan_dirs.length > 0 && (
             <button className="btn secondary" disabled={busy}

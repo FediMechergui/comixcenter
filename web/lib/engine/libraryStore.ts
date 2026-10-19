@@ -7,6 +7,7 @@ import { detectPanelsInImage, imagesToPdf, openComic, readEmbeddedMetadata, DEFA
 import { applyMatch, guessFromFilename } from "./matching";
 import { fileStore } from "./storage";
 import { issueCards } from "./services/catalog";
+import { checkCancelled } from "@/lib/download-transfer";
 
 export class ImportError extends Error {}
 
@@ -24,10 +25,35 @@ const pagePath = (f: LibraryFile, i: number) => `${f.dir}/p${String(i + 1).padSt
 export type ImportProgress = (done: number, total: number) => void;
 
 /** Adds a comic to the library and matches it to the catalog. Returns [file, created]. */
-export async function importComic(bytes: Uint8Array, originalName: string, progress?: ImportProgress, opdsFeedId?: Id | null): Promise<[LibraryFile, boolean]> {
+let importing = false;
+let maintenance = false;
+export async function withLibraryMaintenance<T>(operation: () => Promise<T>): Promise<T> {
+  if (importing || maintenance) throw new ImportError("Finish the current comic import before restoring a backup.");
+  maintenance = true;
+  try { return await operation(); } finally { maintenance = false; }
+}
+const IMPORT_MARKER = "import-in-progress";
+/** Only the recorded private import directory can be recovered; catalogued comics are kept. */
+export async function recoverInterruptedImport() {
+  const marker = (await db().settings.get(IMPORT_MARKER))?.value as { dir?: string; sha256?: string } | undefined;
+  if (!marker) return;
+  if (typeof marker.sha256 === "string" && /^[a-f0-9]{64}$/.test(marker.sha256) && marker.dir === `library/${marker.sha256.slice(0,2)}/${marker.sha256}`) {
+    if (!(await db().libraryFiles.where("sha256").equals(marker.sha256).first())) await fileStore().removeDir(marker.dir);
+  }
+  await db().settings.delete(IMPORT_MARKER);
+}
+export async function importComic(bytes: Uint8Array, originalName: string, progress?: ImportProgress, opdsFeedId?: Id | null, signal?: AbortSignal): Promise<[LibraryFile, boolean]> {
+  if (importing || maintenance) throw new ImportError("Another comic import or recovery is running. Wait for it to finish and retry.");
+  importing = true;
+  try { return await importComicFile(bytes, originalName, progress, opdsFeedId, signal); }
+  finally { importing = false; }
+}
+async function importComicFile(bytes: Uint8Array, originalName: string, progress?: ImportProgress, opdsFeedId?: Id | null, signal?: AbortSignal): Promise<[LibraryFile, boolean]> {
+  checkCancelled(signal);
   if (bytes.byteLength > 64 * 1024 * 1024) throw new ImportError("Import one archive up to 64 MB at a time to keep the phone responsive.");
   const d = db();
   const digest = await sha256(bytes);
+  checkCancelled(signal);
   const existing = await d.libraryFiles.where("sha256").equals(digest).first();
   if (existing) return [existing, false];
   let source;
@@ -39,11 +65,21 @@ export async function importComic(bytes: Uint8Array, originalName: string, progr
   const dir = `library/${digest.slice(0, 2)}/${digest}`;
   const store = fileStore();
   let insertedId: Id | undefined;
+  let settled = false;
   try {
+    checkCancelled(signal);
     if (source.pageCount === 0) throw new ImportError(`${originalName} contains no pages`);
+    if (source.pageCount > 2000) throw new ImportError("Import a comic with up to 2,000 pages at a time.");
     const pageExt: string[] = [];
+    let expanded = 0;
+    await d.settings.put({ key: IMPORT_MARKER, value: { dir, sha256: digest } });
+    progress?.(0, source.pageCount);
     for (let i = 0; i < source.pageCount; i++) {
+      checkCancelled(signal);
       const page = await source.getPage(i);
+      checkCancelled(signal);
+      expanded += page.data.byteLength;
+      if (expanded > 256 * 1024 * 1024) throw new ImportError("The extracted comic exceeds the 256 MB storage limit.");
       const ext = EXT[page.mime] ?? "jpg";
       pageExt.push(ext);
       await store.write(`${dir}/p${String(i + 1).padStart(5, "0")}.${ext}`, page.data);
@@ -51,6 +87,7 @@ export async function importComic(bytes: Uint8Array, originalName: string, progr
     }
     if (source.format === "pdf") await store.write(`${dir}/original.pdf`, bytes);
     const info = readEmbeddedMetadata(await source.metadataFiles());
+    checkCancelled(signal);
     const file: LibraryFile = {
       dir, original_name: originalName, format: source.format, size: bytes.byteLength, sha256: digest, page_count: source.pageCount,
       added_at: nowIso(), current_page: 0, comicinfo: Object.keys(info).length ? info : null,
@@ -59,17 +96,23 @@ export async function importComic(bytes: Uint8Array, originalName: string, progr
     file.id = await d.libraryFiles.add(file);
     insertedId = file.id;
     await applyMatch(file);
+    checkCancelled(signal);
     const recovered = (await d.settings.get("recovered-library-progress"))?.value;
     if (Array.isArray(recovered)) {
       const saved = recovered.find((f) => f.sha256 === digest);
       if (saved) await d.libraryFiles.update(file.id, { current_page: Math.min(Math.max(0, saved.current_page), source.pageCount - 1), finished_at: saved.finished_at, last_read_at: saved.last_read_at });
     }
-    return [(await d.libraryFiles.get(file.id))!, true];
+    const imported = (await d.libraryFiles.get(file.id))!;
+    checkCancelled(signal);
+    settled = true;
+    return [imported, true];
   } catch (e) {
     if (insertedId != null) await d.libraryFiles.delete(insertedId);
     await store.removeDir(dir);
+    settled = true;
     throw e instanceof ImportError ? e : new ImportError(`${originalName}: ${(e as Error).message}`);
   } finally {
+    if (settled) await d.settings.delete(IMPORT_MARKER);
     source.close();
   }
 }

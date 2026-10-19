@@ -127,7 +127,12 @@ class ZipIndex {
 
   constructor(private readonly bytes: Uint8Array) {
     try {
-      unzipSync(bytes, { filter: (f) => { this.names.push(f.name); return false; } });
+      let expanded = 0;
+      unzipSync(bytes, { filter: (f) => {
+        expanded += f.originalSize;
+        if (f.originalSize > 32 * 1024 * 1024 || expanded > 256 * 1024 * 1024) throw new Error("Zip archive exceeds the safe extraction size limit");
+        this.names.push(f.name); return false;
+      } });
     } catch (e) {
       throw new ArchiveError(`Corrupt zip archive: ${(e as Error).message}`, { cause: e });
     }

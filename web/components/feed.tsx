@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { Thumb } from "@/components/cards";
 import * as I from "@/components/icons";
 import { useAction } from "@/components/ui";
-import { api, qs, refresh } from "@/lib/api";
+import { api, qs, refresh, dataMode } from "@/lib/api";
+import { startDownload, useDownloads, isDownloading } from "@/lib/downloads";
 import type { OpdsEntry } from "@/lib/types";
 
 /**
@@ -21,6 +22,7 @@ export function FeedEntry({ entry, feedId, onOpen }: {
 }) {
   const router = useRouter();
   const { run, busy } = useAction();
+  const downloading = useDownloads().some(isDownloading);
   const file = entry.acquisitions[0];
   const navigation = entry.kind === "navigation" && entry.href && onOpen;
   return (
@@ -44,15 +46,17 @@ export function FeedEntry({ entry, feedId, onOpen }: {
             </Link>
           )}
           {file && (
-            <button className="btn secondary small" disabled={busy}
-              onClick={() => run(
+            <button className="btn secondary small" disabled={busy || downloading}
+              onClick={() => {
+                if (dataMode() === "device") { void run(async () => { startDownload(feedId, file.href, entry.title); return true; }, "Download started. Progress is in Library."); return; }
+                void run(
                 () => api.post<{ created: boolean; file: { id: number } }>(`/api/opds/${feedId}/import`, { href: file.href, title: entry.title }),
                 (r) => (r.created ? `Saved ${entry.title}` : `${entry.title} was already saved`),
               ).then((r) => {
                 refresh("/api/library");
                 // Saved to the phone, so open it rather than leaving it to be found in the library.
                 if (r?.file?.id) router.push(`/read?file=${r.file.id}`);
-              })}>
+              }); }}>
               <I.Download />Save
             </button>
           )}

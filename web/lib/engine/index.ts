@@ -7,6 +7,7 @@ import { configureLibrary } from "./library";
 import { handle, HttpError } from "./router";
 import { loadBundledSnapshot } from "./snapshot";
 import { seedTaxonomy } from "./taxonomy";
+import { recoverInterruptedImport } from "./libraryStore";
 
 let ready: Promise<void> | null = null;
 
@@ -15,6 +16,7 @@ export function initEngine(): Promise<void> {
   if (!ready) {
     ready = (async () => {
       await db().open();
+      await recoverInterruptedImport();
       await seedTaxonomy();
       // Seeds the catalog shipped with this build; a no-op once the phone has one of its own.
       await loadBundledSnapshot();

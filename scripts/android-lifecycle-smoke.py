@@ -1,5 +1,6 @@
 """Checks imported reader progress across background, rotation and process restart."""
 import asyncio
+import argparse
 import json
 import runpy
 import time
@@ -10,7 +11,8 @@ adb, evaluate, screenshot, targets, CDPConnection = [base[n] for n in ("adb", "e
 
 
 async def main():
-    folder = Path("scratch/android-validation/lifecycle-0.3.0"); folder.mkdir(parents=True, exist_ok=True)
+    parser = argparse.ArgumentParser(); parser.add_argument("--label", default="lifecycle-current"); args = parser.parse_args()
+    folder = Path("scratch/android-validation") / args.label; folder.mkdir(parents=True, exist_ok=True)
     report = {"checks": {}, "measurements": {}, "failures": []}
     app = await CDPConnection(next(t for t in targets() if t.get("type") == "page" and t["url"].startswith("http://localhost/"))["webSocketDebuggerUrl"]).connect()
     rotation = adb("shell", "settings", "get", "system", "user_rotation").decode().strip()

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import * as I from "@/components/icons";
 import { ToastProvider } from "@/components/ui";
+import { DownloadNotice } from "@/components/downloads";
 
 const TABS = [
   { href: "/", label: "Discover", icon: I.Home, match: ["/"] },
@@ -82,6 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {nav(RAIL_FOOT)}
         </nav>
         <main className="main" id="content">{children}</main>
+        {pathname.replace(/\/$/, "") !== "/library" && <DownloadNotice />}
         <nav className="tabbar" aria-label="Main">
           {TABS.map(({ href, label, icon: Icon, match }) => (
             <Link key={href} href={href} className="tab" aria-current={isActive(pathname, match) ? "page" : undefined}>
